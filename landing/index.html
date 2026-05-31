@@ -457,11 +457,13 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
   .value-header { flex-direction: column; }
   /* Value bento — stack on mobile */
   .value-bento { grid-template-columns: 1fr; min-height: auto; }
-  .vcard { min-height: 280px; }
-  .vcard-1 { min-height: 320px; }
-  /* Safety bento — stack on mobile */
-  .safety-bento { grid-template-columns: 1fr; grid-template-rows: auto; min-height: auto; }
-  .safety-feature { grid-column: 1; grid-row: auto; min-height: 420px; }
+  .vcard { min-height: auto; }
+  .vcard-1 { min-height: auto; }
+  /* Safety bento — single column, auto height */
+  .safety-bento { grid-template-columns: 1fr; grid-template-rows: auto; min-height: auto; gap: 14px; }
+  .safety-step { min-height: auto; padding: 22px 20px; }
+  .safety-step::before { font-size: 5rem; bottom: -10px; }
+  .safety-feature { grid-column: 1; grid-row: auto; min-height: auto; padding: 32px 24px; }
   .safety-header { flex-direction: column; align-items: flex-start; }
   .safety-header-sub { text-align: left; }
   .safety-title { font-size: clamp(2.4rem, 10vw, 3.5rem); letter-spacing: -2px; }
