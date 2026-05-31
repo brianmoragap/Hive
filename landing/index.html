@@ -96,8 +96,8 @@ nav.dark .nav-logo { color: #fff; }
 /* ─── PROBLEM SECTION — DARK ─── */
 #problem { background: var(--bg-dark); padding: 140px 80px; position: relative; overflow: hidden; }
 .problem-bg-photo { position: absolute; inset: 0; z-index: 0; }
-.problem-bg-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: 0.38; filter: grayscale(20%); }
-.problem-overlay { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(26,10,14,0.97) 0%, rgba(26,10,14,0.92) 42%, rgba(26,10,14,0.55) 75%, rgba(26,10,14,0.35) 100%); z-index: 1; }
+.problem-bg-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: 0.55; filter: grayscale(10%); }
+.problem-overlay { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(26,10,14,0.88) 0%, rgba(26,10,14,0.75) 42%, rgba(26,10,14,0.35) 75%, rgba(26,10,14,0.18) 100%); z-index: 1; }
 .problem-inner { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
 .problem-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
 .problem-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; line-height: 1.06; color: #fff; margin-bottom: 24px; }
@@ -105,7 +105,7 @@ nav.dark .nav-logo { color: #fff; }
 .problem-body { font-size: 1.05rem; font-weight: 500; color: rgba(255,255,255,0.58); line-height: 1.8; }
 
 .chat-stack { display: flex; flex-direction: column; gap: 18px; }
-.chat-bubble { display: flex; align-items: flex-start; gap: 14px; opacity: 0; transform: translateX(40px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.chat-bubble { display: flex; align-items: flex-start; gap: 14px; opacity: 0; transform: translateX(40px); transition: opacity 1s var(--ease-out), transform 1s var(--ease-out); }
 .chat-bubble.visible { opacity: 1; transform: translateX(0); }
 .chat-bubble.left { flex-direction: row-reverse; }
 .chat-bubble.left .bubble-body { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); align-self: flex-end; border-radius: 20px 4px 20px 20px; }
@@ -126,32 +126,123 @@ nav.dark .nav-logo { color: #fff; }
 /* ─── VALUE — LIGHT ─── */
 #value { background: var(--bg); padding: 140px 80px; }
 .value-inner { max-width: 1180px; margin: 0 auto; }
-.value-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 80px; flex-wrap: wrap; gap: 24px; }
-.value-headline { font-size: clamp(2.2rem, 4.5vw, 3.8rem); font-weight: 800; letter-spacing: -2px; line-height: 1.05; color: var(--text); max-width: 540px; }
+
+/* Header */
+.value-header { display: grid; grid-template-columns: 1fr auto; align-items: end; margin-bottom: 72px; gap: 40px; }
+.value-eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.value-eyebrow-line { width: 40px; height: 2px; background: var(--primary); }
+.value-eyebrow-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); }
+.value-headline { font-size: clamp(2.8rem, 5.5vw, 5rem); font-weight: 800; letter-spacing: -3px; line-height: 1.0; color: var(--text); }
 .value-headline em { font-style: normal; color: var(--primary); }
-.value-sub { font-size: 1rem; font-weight: 500; color: var(--text-muted); line-height: 1.75; max-width: 340px; }
-.value-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
-.value-card { background: #fff; border-radius: 28px; padding: 40px 36px; border: 1px solid var(--border); position: relative; overflow: hidden; opacity: 0; transform: translateY(36px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); box-shadow: 0 4px 24px rgba(77,33,42,0.06); }
-.value-card.visible { opacity: 1; transform: translateY(0); }
-.value-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-deep)); border-radius: 4px 4px 0 0; transform: scaleX(0); transform-origin: left; transition: transform .6s .2s var(--ease-out); }
-.value-card.visible::before { transform: scaleX(1); }
-.card-icon { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--primary-soft), #fff); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; flex-shrink: 0; }
-.card-icon svg { width: 26px; height: 26px; }
-.card-num { font-size: .68rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--primary-deep); margin-bottom: 14px; display: block; opacity: .6; }
-.card-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); margin-bottom: 14px; }
-.card-body { font-size: .9rem; font-weight: 500; color: var(--text-muted); line-height: 1.75; }
-.card-tag { display: inline-block; margin-top: 18px; padding: 5px 14px; background: var(--primary-soft); border-radius: 999px; font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--primary-deep); }
+.value-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0; border-right: 3px solid var(--primary); padding-right: 32px; max-width: 340px; }
+.value-right-hook { font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 800; letter-spacing: -1px; line-height: 1.2; color: var(--text); text-align: right; margin-bottom: 14px; }
+.value-right-hook em { font-style: normal; color: var(--primary); }
+.value-sub { font-size: .92rem; font-weight: 500; color: var(--text-muted); line-height: 1.8; text-align: right; }
+
+/* Bento grid */
+.value-bento { display: grid; grid-template-columns: 1.15fr 1fr 1fr; grid-template-rows: 1fr; gap: 20px; min-height: 500px; }
+
+/* Card base */
+.vcard { border-radius: 32px; padding: 44px 40px; position: relative; overflow: hidden; opacity: 0; transform: translateY(40px); transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); display: flex; flex-direction: column; justify-content: flex-end; }
+.vcard.visible { opacity: 1; transform: translateY(0); }
+
+/* Card 1 — Coral hero */
+.vcard-1 { background: linear-gradient(150deg, #AF232B 0%, #FF5E5E 60%, #FF9C93 100%); }
+.vcard-1::before { content: '01'; position: absolute; top: -20px; right: -10px; font-size: 13rem; font-weight: 800; letter-spacing: -8px; color: rgba(255,255,255,0.1); line-height: 1; pointer-events: none; }
+.vcard-1 .vc-icon { width: 60px; height: 60px; border-radius: 18px; background: rgba(255,255,255,0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }
+.vcard-1 .vc-icon svg { width: 28px; height: 28px; stroke: #fff; }
+.vcard-1 .vc-label { font-size: .65rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.65); margin-bottom: 10px; display: block; }
+.vcard-1 .vc-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -1px; color: #fff; line-height: 1.1; margin-bottom: 16px; }
+.vcard-1 .vc-body { font-size: .88rem; font-weight: 500; color: rgba(255,255,255,0.78); line-height: 1.72; }
+.vcard-1 .vc-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 8px 16px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: .72rem; font-weight: 700; color: #fff; letter-spacing: .06em; width: fit-content; }
+.vcard-1 .vc-tag-dot { width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+
+/* Card 2 — Light warm */
+.vcard-2 { background: #fff; border: 1px solid var(--border); }
+.vcard-2::before { content: '02'; position: absolute; bottom: -30px; right: -10px; font-size: 11rem; font-weight: 800; letter-spacing: -6px; color: rgba(175,35,43,0.05); line-height: 1; pointer-events: none; }
+.vcard-2::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(to bottom, var(--primary), var(--primary-deep)); border-radius: 32px 0 0 32px; }
+.vcard-2 .vc-icon { width: 52px; height: 52px; border-radius: 16px; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+.vcard-2 .vc-icon svg { width: 24px; height: 24px; stroke: var(--primary-deep); }
+.vcard-2 .vc-label { font-size: .65rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--primary-deep); opacity: .65; margin-bottom: 10px; display: block; }
+.vcard-2 .vc-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.6px; color: var(--text); line-height: 1.15; margin-bottom: 14px; }
+.vcard-2 .vc-body { font-size: .86rem; font-weight: 500; color: var(--text-muted); line-height: 1.72; }
+.vcard-2 .vc-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; padding: 7px 14px; background: var(--primary-soft); border-radius: 999px; font-size: .7rem; font-weight: 700; color: var(--primary-deep); letter-spacing: .06em; width: fit-content; }
+
+/* Card 3 — Dark */
+.vcard-3 { background: var(--bg-dark); }
+.vcard-3::before { content: '03'; position: absolute; top: -20px; right: -10px; font-size: 11rem; font-weight: 800; letter-spacing: -6px; color: rgba(255,94,94,0.08); line-height: 1; pointer-events: none; }
+.vcard-3 .vc-icon { width: 52px; height: 52px; border-radius: 16px; background: rgba(255,94,94,0.15); border: 1px solid rgba(255,94,94,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+.vcard-3 .vc-icon svg { width: 24px; height: 24px; stroke: var(--primary); }
+.vcard-3 .vc-label { font-size: .65rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--primary); opacity: .8; margin-bottom: 10px; display: block; }
+.vcard-3 .vc-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.6px; color: #fff; line-height: 1.15; margin-bottom: 14px; }
+.vcard-3 .vc-body { font-size: .86rem; font-weight: 500; color: rgba(255,255,255,0.5); line-height: 1.72; }
+.vcard-3 .vc-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; padding: 7px 14px; background: rgba(255,94,94,0.15); border: 1px solid rgba(255,94,94,0.2); border-radius: 999px; font-size: .7rem; font-weight: 700; color: var(--primary); letter-spacing: .06em; width: fit-content; }
+
+/* Hover lifts */
+.vcard-2:hover, .vcard-3:hover { transform: translateY(-6px) !important; box-shadow: 0 24px 60px rgba(77,33,42,0.14); transition: transform .35s var(--ease-spring), box-shadow .35s, opacity .8s var(--ease-out); }
+.vcard-1:hover { transform: translateY(-6px) scale(1.01) !important; transition: transform .35s var(--ease-spring), opacity .8s var(--ease-out); }
+
+@media (max-width: 1024px) {
+  .value-bento { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+  .vcard-1 { grid-column: 1 / -1; min-height: 320px; }
+  .value-header { grid-template-columns: 1fr; }
+  .value-sub { text-align: left; border-right: none; border-left: 2px solid var(--border); padding-right: 0; padding-left: 20px; max-width: 480px; }
+}
+@media (max-width: 640px) {
+  .value-bento { grid-template-columns: 1fr; }
+  .vcard-1 { grid-column: 1; }
+}
 
 /* ─── HOW IT WORKS — DARK ─── */
-#how { background: var(--bg-dark); padding: 140px 80px; }
-.how-inner { max-width: 1180px; margin: 0 auto; }
+#how {
+  background: var(--bg-dark);
+  padding: 140px 80px;
+  position: relative;
+  overflow: hidden;
+}
+@keyframes hexDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 86.6px 150px; }
+}
+@keyframes hexFade {
+  0%,100% { opacity: .85; }
+  50%      { opacity: 1; }
+}
+#how::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  /* Correct honeycomb tile:
+     pointy-top hex, circumradius R=50.
+     tile_w = R√3 = 86.6,  tile_h = 3R = 150
+     Hex A at center (43.3, 50):
+       top(43.3,0) → ur(86.6,25) → lr(86.6,75) → btm(43.3,100) → ll(0,75) → ul(0,25) → Z
+     Stem (connects to hex in row below):
+       (43.3,100) → (43.3,150)
+  */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='86.6' height='150'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF5E5E' stop-opacity='0.22'/%3E%3Cstop offset='1' stop-color='%23AF232B' stop-opacity='0.08'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M43.3,0 L86.6,25 L86.6,75 L43.3,100 L0,75 L0,25 Z' fill='url(%23g)' stroke='%23FF5E5E' stroke-opacity='0.22' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cline x1='43.3' y1='100' x2='43.3' y2='150' stroke='%23FF5E5E' stroke-opacity='0.22' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-size: 86.6px 150px;
+  pointer-events: none;
+  z-index: 0;
+  animation: hexDrift 90s linear infinite, hexFade 8s ease-in-out infinite;
+}
+#how::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 50% at 50% 50%, transparent 0%, rgba(26,10,14,0.55) 55%, var(--bg-dark) 100%),
+    radial-gradient(ellipse 30% 30% at 50% 20%, rgba(255,94,94,0.04) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.how-inner { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
 .how-header { text-align: center; margin-bottom: 96px; }
 .how-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); display: block; margin-bottom: 20px; }
 .how-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; color: #fff; line-height: 1.08; }
 .how-title em { font-style: italic; color: rgba(255,255,255,0.45); }
 .steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 40px; position: relative; }
-.steps-grid::before { content: ''; position: absolute; top: 60px; left: calc(16.67% + 20px); right: calc(16.67% + 20px); height: 1px; background: linear-gradient(90deg, transparent, rgba(255,94,94,0.3), transparent); pointer-events: none; }
-.step-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 48px 36px; text-align: center; position: relative; opacity: 0; transform: translateY(40px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.step-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 48px 36px; text-align: center; position: relative; opacity: 0; transform: translateY(40px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); backdrop-filter: blur(8px); }
 .step-card.visible { opacity: 1; transform: translateY(0); }
 .step-num { font-size: 5rem; font-weight: 800; letter-spacing: -3px; color: rgba(255,255,255,0.06); line-height: 1; margin-bottom: 24px; display: block; }
 .step-icon { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, rgba(255,94,94,0.2), rgba(175,35,43,0.3)); border: 1px solid rgba(255,94,94,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
@@ -220,40 +311,57 @@ nav.dark .nav-logo { color: #fff; }
 
 /* ─── SAFETY SECTION — LIGHT ─── */
 #safety { background: var(--bg); padding: 140px 80px; }
-.safety-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-.safety-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); display: block; margin-bottom: 20px; }
-.safety-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; line-height: 1.06; color: var(--text); margin-bottom: 24px; }
-.safety-body { font-size: 1rem; font-weight: 500; color: var(--text-muted); line-height: 1.8; margin-bottom: 36px; }
-.verify-flow { display: flex; flex-direction: column; gap: 0; }
-.verify-step { display: flex; gap: 20px; align-items: flex-start; position: relative; opacity: 0; transform: translateX(-30px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
-.verify-step.visible { opacity: 1; transform: translateX(0); }
-.verify-step-line { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
-.verify-circle { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-soft), #fff); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.verify-circle svg { width: 20px; height: 20px; }
-.verify-connector { width: 2px; height: 48px; background: linear-gradient(to bottom, var(--border), transparent); margin: 4px auto; }
-.verify-step:last-child .verify-connector { display: none; }
-.verify-content { padding-bottom: 48px; }
-.verify-step:last-child .verify-content { padding-bottom: 0; }
-.verify-label { font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--primary-deep); margin-bottom: 6px; display: block; }
-.verify-desc { font-size: .9rem; font-weight: 500; color: var(--text-muted); line-height: 1.6; }
+.safety-inner { max-width: 1180px; margin: 0 auto; }
 
-.safety-visual { position: relative; }
-.safety-card { background: #fff; border-radius: 28px; padding: 36px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(77,33,42,0.1); }
-.safety-badge-large { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg, var(--primary-soft), rgba(255,94,94,0.1)); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
-.safety-badge-large svg { width: 34px; height: 34px; }
-.safety-card h3 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); margin-bottom: 10px; }
-.safety-card p { font-size: .9rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
-.safety-checklist { display: flex; flex-direction: column; gap: 14px; }
-.safety-check { display: flex; align-items: center; gap: 14px; }
-.check-circle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(47,142,109,0.15), rgba(47,142,109,0.08)); border: 1.5px solid rgba(47,142,109,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.check-circle svg { width: 13px; height: 13px; }
-.check-text { font-size: .88rem; font-weight: 600; color: var(--text); }
-.safety-float-card { position: absolute; right: -24px; top: 50%; transform: translateY(-50%); background: #fff; border-radius: 18px; padding: 18px 20px; border: 1px solid var(--border); box-shadow: 0 16px 48px rgba(77,33,42,0.14); min-width: 200px; }
-.float-verified { display: flex; align-items: center; gap: 12px; }
-.float-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(47,142,109,0.15), rgba(47,142,109,0.05)); display: flex; align-items: center; justify-content: center; }
-.float-icon svg { width: 20px; height: 20px; }
-.float-text strong { font-size: .9rem; font-weight: 800; color: var(--text); display: block; }
-.float-text span { font-size: .75rem; color: var(--text-muted); }
+.safety-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 56px; gap: 40px; flex-wrap: wrap; }
+.safety-headline-wrap { flex: 1; }
+.safety-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.safety-tag::before { content: ''; width: 32px; height: 2px; background: var(--primary); display: block; }
+.safety-title { font-size: clamp(2.8rem, 5.5vw, 5rem); font-weight: 800; letter-spacing: -4px; line-height: .95; color: var(--text); }
+.safety-title em { font-style: normal; color: var(--primary); }
+.safety-header-sub { font-size: .95rem; font-weight: 500; color: var(--text-muted); line-height: 1.8; max-width: 320px; text-align: right; }
+
+/* Bento grid */
+.safety-bento { display: grid; grid-template-columns: 1fr 1fr 1.05fr; grid-template-rows: 1fr 1fr; gap: 18px; min-height: 560px; }
+
+/* Step dark cards */
+.safety-step { background: var(--bg-dark); border-radius: 24px; padding: 32px 28px; position: relative; overflow: hidden; opacity: 0; transform: translateY(32px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out), box-shadow .3s, border-color .3s; border: 1px solid transparent; will-change: transform; }
+.safety-step.visible { opacity: 1; transform: translateY(0); }
+.safety-step::before { content: attr(data-num); position: absolute; bottom: -16px; right: 8px; font-size: 8rem; font-weight: 800; letter-spacing: -5px; color: rgba(255,94,94,0.07); line-height: 1; pointer-events: none; }
+.safety-step:hover { background: #200d12; border-color: rgba(255,94,94,0.18); box-shadow: 0 0 40px rgba(255,94,94,0.07), 0 24px 60px rgba(0,0,0,0.28); transition: background .3s, border-color .3s, box-shadow .3s; }
+.s-icon { transition: transform .18s ease-out; }
+.s-icon { width: 46px; height: 46px; border-radius: 14px; background: rgba(255,94,94,0.12); border: 1px solid rgba(255,94,94,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.s-icon svg { width: 21px; height: 21px; }
+.s-num { font-size: .6rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--primary); opacity: .9; display: block; margin-bottom: 7px; }
+.s-title { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.2; margin-bottom: 8px; }
+.s-body { font-size: .8rem; font-weight: 500; color: rgba(255,255,255,0.48); line-height: 1.65; }
+
+/* Feature panel — coral */
+.safety-feature { grid-column: 3; grid-row: 1 / 3; background: linear-gradient(155deg, #8B1A21 0%, #AF232B 30%, #FF5E5E 70%, #FF9C93 100%); border-radius: 32px; padding: 48px 40px; display: flex; flex-direction: column; position: relative; overflow: hidden; opacity: 0; transform: translateX(36px); transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); will-change: transform; }
+.sf-shine { position: absolute; inset: 0; border-radius: 32px; background: radial-gradient(circle at 70% 20%, rgba(255,255,255,0.14) 0%, transparent 55%); pointer-events: none; z-index: 2; transition: background .05s linear; }
+.safety-feature.visible { opacity: 1; transform: translateX(0); }
+.safety-feature::before { content: ''; position: absolute; top: -80px; right: -80px; width: 280px; height: 280px; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
+.safety-feature::after { content: ''; position: absolute; bottom: -60px; left: -50px; width: 220px; height: 220px; border-radius: 50%; background: rgba(100,10,20,0.35); pointer-events: none; }
+.sf-top { position: relative; z-index: 1; flex: 1; }
+.sf-shield { width: 76px; height: 76px; border-radius: 22px; background: rgba(255,255,255,0.18); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; margin-bottom: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+.sf-shield svg { width: 38px; height: 38px; }
+.sf-label { font-size: .62rem; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; margin-bottom: 10px; }
+.sf-title { font-size: 1.7rem; font-weight: 800; color: #fff; letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px; }
+.sf-sub { font-size: .88rem; color: rgba(255,255,255,0.72); line-height: 1.75; margin-bottom: 36px; }
+.sf-checks { display: flex; flex-direction: column; gap: 13px; position: relative; z-index: 1; }
+.sf-check { display: flex; align-items: center; gap: 13px; }
+.sf-dot { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sf-dot svg { width: 10px; height: 10px; }
+.sf-check-text { font-size: .84rem; font-weight: 600; color: rgba(255,255,255,0.88); }
+.sf-bottom { position: relative; z-index: 1; margin-top: 36px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.15); }
+.sf-pill { display: inline-flex; align-items: center; gap: 9px; padding: 9px 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.22); border-radius: 999px; font-size: .75rem; font-weight: 700; color: #fff; }
+.sf-pill-dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; animation: pulse 2s ease infinite; }
+
+@media (max-width: 1024px) {
+  .safety-bento { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; }
+  .safety-feature { grid-column: 1 / -1; grid-row: auto; min-height: 400px; }
+  .safety-header-sub { text-align: left; }
+}
 
 /* ─── TESTIMONIALS — DARK ─── */
 #testimonials { background: var(--bg-dark); padding: 140px 0; overflow: hidden; }
@@ -403,7 +511,7 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
 ══════════════════════════════════════════════ -->
 <section id="problem">
   <div class="problem-bg-photo">
-    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1600&q=85" alt="Mujer deportista con celular"/>
+    <img src="./woman-phone.jpg" alt="Mujer deportista chateando en celular"/>
   </div>
   <div class="problem-overlay"></div>
   <div class="problem-inner">
@@ -420,21 +528,21 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
           <div class="bubble-time">07:14</div>
         </div>
       </div>
-      <div class="chat-bubble left" data-delay="200">
+      <div class="chat-bubble left" data-delay="600">
         <div class="bubble-avatar">SL</div>
         <div class="bubble-body">
           <p>Te envié ubicación en vivo, avísame cuando estés segura</p>
           <div class="bubble-time">07:31</div>
         </div>
       </div>
-      <div class="chat-bubble" data-delay="400">
+      <div class="chat-bubble" data-delay="1200">
         <div class="bubble-avatar">MR</div>
         <div class="bubble-body">
           <p>Si no llego a las 3, pasó algo. Tú sabes qué hacer</p>
           <div class="bubble-time">14:22</div>
         </div>
       </div>
-      <div class="chat-bubble left" data-delay="600">
+      <div class="chat-bubble left" data-delay="1900">
         <div class="bubble-avatar">KV</div>
         <div class="bubble-body">
           <p>Mejor vamos en grupo... solas da miedo esa ruta</p>
@@ -472,38 +580,53 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
   <div class="value-inner">
     <div class="value-header anim-reveal">
       <div>
-        <h2 class="value-headline">La primera app<br/><em>100% femenina</em><br/>de deporte en Chile</h2>
+        <div class="value-eyebrow">
+          <span class="value-eyebrow-line"></span>
+          <span class="value-eyebrow-tag">Por qué Hive</span>
+        </div>
+        <h2 class="value-headline">La primera app <em>100% femenina</em> de deporte en Chile</h2>
       </div>
-      <p class="value-sub">Hive no es Strava. No es Garmin. Es tu colmena: el lugar donde mujeres que entrenan duro encuentran compañía verificada y segura.</p>
+      <div class="value-right">
+        <p class="value-right-hook">No es Strava.<br/>No es Garmin.<br/><em>Es tu colmena.</em></p>
+        <p class="value-sub">El lugar donde mujeres que entrenan duro encuentran compañía verificada, segura y de verdad.</p>
+      </div>
     </div>
-    <div class="value-grid">
-      <div class="value-card" data-delay="0">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+
+    <div class="value-bento">
+
+      <!-- Card 1 — Coral hero -->
+      <div class="vcard vcard-1" data-delay="0">
+        <div class="vc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
-        <span class="card-num">01 —</span>
-        <h3 class="card-title">Seguridad Inteligente</h3>
-        <p class="card-body">Solo mujeres verificadas con cédula de identidad y selfie en vivo. Cada miembro es real. Cada salida, confiable. Check-ins automáticos y contactos de emergencia.</p>
-        <span class="card-tag">ID Verificado</span>
+        <span class="vc-label">01 — Seguridad</span>
+        <h3 class="vc-title">Seguridad<br/>Inteligente</h3>
+        <p class="vc-body">Solo mujeres verificadas con cédula de identidad y selfie en vivo. Cada miembro es real. Cada salida, confiable. Check-ins automáticos y contactos de emergencia integrados.</p>
+        <div class="vc-tag"><span class="vc-tag-dot"></span> ID Verificado</div>
       </div>
-      <div class="value-card" data-delay="150">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/><path d="M20 21a8 8 0 10-16 0"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+
+      <!-- Card 2 — Light -->
+      <div class="vcard vcard-2" data-delay="180">
+        <div class="vc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7.5 7.5 0 0113 0"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg>
         </div>
-        <span class="card-num">02 —</span>
-        <h3 class="card-title">Comunidad que Apaña</h3>
-        <p class="card-body">Encuentra mujeres con tu ritmo, tu disciplina y tus horarios. Únete a salidas organizadas por lideresas verificadas. Feed de actividad real, no likes vacíos.</p>
-        <span class="card-tag">Social-Fitness</span>
+        <span class="vc-label">02 — Comunidad</span>
+        <h3 class="vc-title">Comunidad<br/>que Apaña</h3>
+        <p class="vc-body">Encuentra mujeres con tu ritmo y tus horarios. Únete a salidas organizadas por lideresas verificadas. Feed de actividad real.</p>
+        <div class="vc-tag">Social-Fitness</div>
       </div>
-      <div class="value-card" data-delay="300">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+
+      <!-- Card 3 — Dark -->
+      <div class="vcard vcard-3" data-delay="360">
+        <div class="vc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
-        <span class="card-num">03 —</span>
-        <h3 class="card-title">Ecosistema Premium</h3>
-        <p class="card-body">Más que una app. Descuentos en marcas deportivas, eventos exclusivos, retos por disciplina. Ser parte de Hive es un estilo de vida, no solo un registro.</p>
-        <span class="card-tag">Beneficios Exclusivos</span>
+        <span class="vc-label">03 — Ecosistema</span>
+        <h3 class="vc-title">Ecosistema<br/>Premium</h3>
+        <p class="vc-body">Más que una app. Descuentos en marcas deportivas, eventos exclusivos, retos por disciplina. Ser parte de Hive es un estilo de vida.</p>
+        <div class="vc-tag">Beneficios Exclusivos</div>
       </div>
+
     </div>
   </div>
 </section>
@@ -581,7 +704,7 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
         </div>
       </div>
       <div class="sport-card" data-sport="mtb">
-        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1544191696-15693072e0de?auto=format&fit=crop&w=700&q=80" alt="MTB"/></div>
+        <div class="sport-card-img"><img src="./mtb.jpg" alt="MTB"/></div>
         <div class="sport-card-overlay"></div>
         <div class="sport-card-content">
           <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
@@ -593,7 +716,7 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
         </div>
       </div>
       <div class="sport-card" data-sport="trekking">
-        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=700&q=80" alt="Trekking"/></div>
+        <div class="sport-card-img"><img src="./trekking.jpg" alt="Trekking"/></div>
         <div class="sport-card-overlay"></div>
         <div class="sport-card-content">
           <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
@@ -605,7 +728,7 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
         </div>
       </div>
       <div class="sport-card" data-sport="trail">
-        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&w=700&q=80" alt="Trail Running"/></div>
+        <div class="sport-card-img"><img src="https://dfjx2uxqg3cgi.cloudfront.net/img/photo/149250/149250_00_2x.jpg" alt="Trail Running"/></div>
         <div class="sport-card-overlay"></div>
         <div class="sport-card-content">
           <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
@@ -739,111 +862,96 @@ footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba
 ══════════════════════════════════════════════ -->
 <section id="safety">
   <div class="safety-inner">
-    <div class="safety-text">
-      <span class="section-tag anim-reveal">Solo mujeres verificadas</span>
-      <h2 class="safety-title anim-reveal">Seguridad no<br/>es un feature.<br/>Es el cimiento.</h2>
-      <p class="safety-body anim-reveal">Cada mujer que entra a Hive pasa por verificación de identidad real. Sin excepciones. Así funciona nuestra colmena.</p>
-      <div class="verify-flow">
-        <div class="verify-step" data-delay="0">
-          <div class="verify-step-line">
-            <div class="verify-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="13" y2="11"/></svg>
-            </div>
-            <div class="verify-connector"></div>
-          </div>
-          <div class="verify-content">
-            <span class="verify-label">Paso 1 — Cédula</span>
-            <p class="verify-desc">Fotografía frente y serial de tu cédula de identidad. Encriptado en tránsito y en reposo.</p>
-          </div>
-        </div>
-        <div class="verify-step" data-delay="200">
-          <div class="verify-step-line">
-            <div class="verify-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><rect x="4" y="16" width="16" height="6" rx="1"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
-            </div>
-            <div class="verify-connector"></div>
-          </div>
-          <div class="verify-content">
-            <span class="verify-label">Paso 2 — Selfie en vivo</span>
-            <p class="verify-desc">Una foto en tiempo real para confirmar que eres la persona de tu documento. No se admiten fotos de pantalla.</p>
-          </div>
-        </div>
-        <div class="verify-step" data-delay="400">
-          <div class="verify-step-line">
-            <div class="verify-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-            </div>
-            <div class="verify-connector"></div>
-          </div>
-          <div class="verify-content">
-            <span class="verify-label">Paso 3 — Revisión humana</span>
-            <p class="verify-desc">Nuestro equipo revisa cada solicitud en menos de 24 horas. Cero bots, cero automatización en esta parte.</p>
-          </div>
-        </div>
-        <div class="verify-step" data-delay="600">
-          <div class="verify-step-line">
-            <div class="verify-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-          </div>
-          <div class="verify-content">
-            <span class="verify-label">Acceso a la colmena</span>
-            <p class="verify-desc">Bienvenida. Ahora eres parte de una comunidad donde cada mujer fue verificada igual que tú.</p>
-          </div>
-        </div>
+
+    <!-- Header -->
+    <div class="safety-header anim-reveal">
+      <div class="safety-headline-wrap">
+        <div class="safety-tag">Solo mujeres verificadas</div>
+        <h2 class="safety-title">Seguridad no es<br/>un feature.<br/><em>Es el cimiento.</em></h2>
       </div>
+      <p class="safety-header-sub">Cada mujer que entra a Hive pasa por verificación de identidad real. Sin excepciones. Así funciona nuestra colmena.</p>
     </div>
-    <div class="safety-visual anim-reveal">
-      <div class="safety-card">
-        <div class="safety-badge-large">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+
+    <!-- Bento -->
+    <div class="safety-bento">
+
+      <div class="safety-step" data-num="01" data-delay="0">
+        <div class="s-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="13" y2="11"/></svg>
         </div>
-        <h3>Protocolo de Seguridad Hive</h3>
-        <p>Verificación de 4 pasos que garantiza que cada mujer en la app es quien dice ser. Tu seguridad es nuestra responsabilidad.</p>
-        <div class="safety-checklist">
-          <div class="safety-check">
-            <div class="check-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="check-text">Identidad verificada con documento real</span>
+        <span class="s-num">Paso 01 — Documento</span>
+        <h4 class="s-title">Foto de tu cédula de identidad</h4>
+        <p class="s-body">Frente y serial. Encriptado en tránsito y en reposo. Nunca compartido.</p>
+      </div>
+
+      <div class="safety-step" data-num="02" data-delay="150">
+        <div class="s-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <span class="s-num">Paso 02 — Biometría</span>
+        <h4 class="s-title">Selfie en vivo</h4>
+        <p class="s-body">Una foto en tiempo real. No se admiten fotos de pantalla ni duplicados.</p>
+      </div>
+
+      <div class="safety-step" data-num="03" data-delay="300">
+        <div class="s-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <span class="s-num">Paso 03 — Validación</span>
+        <h4 class="s-title">Revisión humana</h4>
+        <p class="s-body">Nuestro equipo revisa en menos de 24h. Cero bots en esta parte.</p>
+      </div>
+
+      <div class="safety-step" data-num="04" data-delay="450">
+        <div class="s-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="s-num">Paso 04 — Acceso</span>
+        <h4 class="s-title">Bienvenida a la colmena</h4>
+        <p class="s-body">Verificada y parte de una comunidad donde todas pasaron el mismo proceso.</p>
+      </div>
+
+      <!-- Feature panel -->
+      <div class="safety-feature" data-delay="100">
+        <div class="sf-shine"></div>
+        <div class="sf-top">
+          <div class="sf-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
           </div>
-          <div class="safety-check">
-            <div class="check-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="sf-label">Protocolo Hive</span>
+          <h3 class="sf-title">Seguridad real,<br/>no una promesa</h3>
+          <p class="sf-sub">Verificación en 4 pasos que garantiza que cada mujer en la app es quien dice ser.</p>
+          <div class="sf-checks">
+            <div class="sf-check">
+              <div class="sf-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="sf-check-text">Identidad verificada con documento real</span>
             </div>
-            <span class="check-text">Lideresas de eventos con certificación extra</span>
+            <div class="sf-check">
+              <div class="sf-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="sf-check-text">Lideresas con certificación adicional</span>
+            </div>
+            <div class="sf-check">
+              <div class="sf-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="sf-check-text">Check-ins automáticos durante la salida</span>
+            </div>
+            <div class="sf-check">
+              <div class="sf-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="sf-check-text">Red de emergencia integrada en la app</span>
+            </div>
+            <div class="sf-check">
+              <div class="sf-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="sf-check-text">Datos encriptados, revisión humana siempre</span>
+            </div>
           </div>
-          <div class="safety-check">
-            <div class="check-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="check-text">Check-ins automáticos durante la salida</span>
-          </div>
-          <div class="safety-check">
-            <div class="check-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="check-text">Red de contactos de emergencia integrada</span>
-          </div>
-          <div class="safety-check">
-            <div class="check-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="check-text">Datos encriptados, revisión humana obligatoria</span>
+        </div>
+        <div class="sf-bottom">
+          <div class="sf-pill">
+            <span class="sf-pill-dot"></span>
+            98% se sienten más seguras con Hive
           </div>
         </div>
       </div>
-      <div class="safety-float-card">
-        <div class="float-verified">
-          <div class="float-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-          </div>
-          <div class="float-text">
-            <strong>Valentina M.</strong>
-            <span>Verificada · Running</span>
-          </div>
-        </div>
-      </div>
+
     </div>
   </div>
 </section>
@@ -1145,7 +1253,7 @@ const revealObs = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.15 });
 
-document.querySelectorAll('.anim-reveal, .value-card, .step-card, .verify-step, .chat-bubble').forEach(el => revealObs.observe(el));
+document.querySelectorAll('.anim-reveal, .vcard, .step-card, .safety-step, .safety-feature, .chat-bubble').forEach(el => revealObs.observe(el));
 
 /* ══ SPORT CARDS 3D TILT ══ */
 document.querySelectorAll('.sport-card').forEach(card => {
@@ -1222,6 +1330,61 @@ track.addEventListener('mousemove', e => {
   const walk = (x - startX) * 1.6;
   track.scrollLeft = scrollLeft - walk;
 });
+
+/* ══ SAFETY SECTION PARALLAX ══ */
+const safetyEl = document.getElementById('safety');
+const sSteps = [...document.querySelectorAll('.safety-step')];
+const sFeat = document.querySelector('.safety-feature');
+const sfShine = document.querySelector('.sf-shine');
+const sDepth = [1.6, 0.6, 1.2, 0.45]; // depth multiplier per card
+
+let sCx = 0, sCy = 0, sTx = 0, sTy = 0;
+let safetyRafId = null;
+
+function safetyRaf() {
+  sTx += (sCx - sTx) * 0.09;
+  sTy += (sCy - sTy) * 0.09;
+  sSteps.forEach((card, i) => {
+    if (!card.classList.contains('visible')) return;
+    const d = sDepth[i] || 1;
+    card.style.transform = `translate(${sTx * 22 * d}px, ${sTy * 14 * d}px)`;
+    const icon = card.querySelector('.s-icon');
+    if (icon) icon.style.transform = `translate(${-sTx * 9}px, ${-sTy * 6}px)`;
+  });
+  if (sFeat && sFeat.classList.contains('visible')) {
+    sFeat.style.transform = `translate(${-sTx * 11}px, ${-sTy * 7}px)`;
+  }
+  safetyRafId = requestAnimationFrame(safetyRaf);
+}
+
+if (safetyEl) {
+  safetyEl.addEventListener('mouseenter', () => {
+    if (!safetyRafId) safetyRafId = requestAnimationFrame(safetyRaf);
+  });
+  safetyEl.addEventListener('mousemove', e => {
+    const r = safetyEl.getBoundingClientRect();
+    sCx = (e.clientX - r.left) / r.width - 0.5;
+    sCy = (e.clientY - r.top) / r.height - 0.5;
+    if (sfShine && sFeat) {
+      const fr = sFeat.getBoundingClientRect();
+      const sx = Math.max(0, Math.min(100, (e.clientX - fr.left) / fr.width * 100)).toFixed(1);
+      const sy = Math.max(0, Math.min(100, (e.clientY - fr.top) / fr.height * 100)).toFixed(1);
+      sfShine.style.background = `radial-gradient(circle at ${sx}% ${sy}%, rgba(255,255,255,0.18) 0%, transparent 56%)`;
+    }
+  }, { passive: true });
+  safetyEl.addEventListener('mouseleave', () => {
+    sCx = 0; sCy = 0;
+    cancelAnimationFrame(safetyRafId);
+    safetyRafId = null;
+    sSteps.forEach(card => {
+      card.style.transform = '';
+      const icon = card.querySelector('.s-icon');
+      if (icon) icon.style.transform = '';
+    });
+    if (sFeat) sFeat.style.transform = '';
+    if (sfShine) sfShine.style.background = 'radial-gradient(circle at 70% 20%, rgba(255,255,255,0.12) 0%, transparent 55%)';
+  });
+}
 
 /* ══ BETA FORM ══ */
 document.getElementById('beta-submit').addEventListener('click', () => {
