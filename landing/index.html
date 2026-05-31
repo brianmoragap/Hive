@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HIVE — Mejor acompañadas.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --primary: #FF5E5E;
+  --primary-deep: #AF232B;
+  --primary-glow: rgba(255,94,94,0.3);
+  --primary-soft: #FFDADA;
+  --bg: #FFF5F2;
+  --bg-dark: #1A0A0E;
+  --bg-dark-2: #130608;
+  --surface: rgba(255,255,255,0.88);
+  --text: #4D212A;
+  --text-muted: #7D5A62;
+  --text-soft: #9B7A81;
+  --border: rgba(175,35,43,0.12);
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: var(--font); color: var(--text); background: var(--bg); overflow-x: hidden; cursor: none; }
+
+/* ─── CUSTOM CURSOR ─── */
+#cursor { position: fixed; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .25s var(--ease-spring), height .25s var(--ease-spring), background .3s; mix-blend-mode: multiply; }
+#cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid rgba(255,94,94,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: transform .06s linear; }
+body.dark-section #cursor { background: #fff; mix-blend-mode: difference; }
+body.dark-section #cursor-ring { border-color: rgba(255,255,255,0.4); }
+
+/* ─── NAV ─── */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 0 56px; height: 68px; display: flex; align-items: center; justify-content: space-between; transition: background .4s, box-shadow .4s; }
+nav.scrolled { background: rgba(255,245,242,0.92); backdrop-filter: blur(24px); box-shadow: 0 1px 0 var(--border); }
+nav.dark { background: rgba(26,10,14,0.85); backdrop-filter: blur(24px); }
+nav.dark .nav-links a { color: rgba(255,255,255,0.65); }
+nav.dark .nav-links a:hover { color: #fff; }
+nav.dark .nav-logo { color: #fff; }
+.nav-logo { font-size: 1.55rem; font-weight: 800; letter-spacing: -1.5px; color: var(--text); text-decoration: none; }
+.nav-logo span { color: var(--primary); }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a { text-decoration: none; font-weight: 600; font-size: .84rem; color: var(--text-muted); letter-spacing: .02em; transition: color .2s; }
+.nav-links a:hover { color: var(--primary-deep); }
+.nav-cta { height: 42px; padding: 0 22px; background: var(--primary-deep); color: #fff; border: none; border-radius: 999px; font-family: var(--font); font-weight: 700; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; cursor: none; transition: transform .2s var(--ease-spring), box-shadow .2s; box-shadow: 0 6px 20px rgba(175,35,43,0.28); }
+.nav-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(175,35,43,.36); }
+@media (max-width: 768px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+}
+
+/* ─── BUTTONS ─── */
+.btn-primary { display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 36px; background: linear-gradient(135deg, var(--primary) 0%, #FF9C93 50%, var(--primary-deep) 100%); color: #fff; border: none; border-radius: 999px; font-family: var(--font); font-weight: 700; font-size: .9rem; letter-spacing: .14em; text-transform: uppercase; cursor: none; position: relative; overflow: hidden; box-shadow: 0 16px 40px rgba(175,35,43,.28); transition: transform .25s var(--ease-spring), box-shadow .25s; text-decoration: none; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 24px 52px rgba(175,35,43,.40); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 36px; background: transparent; color: var(--primary-deep); border: 1.5px solid rgba(175,35,43,.28); border-radius: 999px; font-family: var(--font); font-weight: 700; font-size: .9rem; letter-spacing: .1em; cursor: none; transition: all .25s var(--ease-spring); text-decoration: none; }
+.btn-ghost:hover { background: rgba(175,35,43,.06); border-color: var(--primary-deep); transform: translateY(-2px); }
+.btn-white { display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 36px; background: #fff; color: var(--primary-deep); border: none; border-radius: 999px; font-family: var(--font); font-weight: 700; font-size: .9rem; letter-spacing: .14em; text-transform: uppercase; cursor: none; box-shadow: 0 12px 40px rgba(0,0,0,0.15); transition: transform .25s var(--ease-spring), box-shadow .25s; text-decoration: none; }
+.btn-white:hover { transform: translateY(-3px); box-shadow: 0 20px 52px rgba(0,0,0,0.22); }
+
+/* ─── HERO ─── */
+#hero { position: relative; height: 100vh; min-height: 680px; display: flex; align-items: flex-end; overflow: hidden; }
+.hero-photo { position: absolute; inset: 0; z-index: 0; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+.hero-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(26,10,14,0.1) 0%, rgba(26,10,14,0.25) 40%, rgba(26,10,14,0.72) 75%, rgba(26,10,14,0.9) 100%); }
+.hero-blobs { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); will-change: transform; }
+.blob-a { width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,94,94,0.22), transparent 70%); top: -10%; right: 5%; animation: blobA 14s ease-in-out infinite; }
+.blob-b { width: 400px; height: 400px; background: radial-gradient(circle, rgba(175,35,43,0.18), transparent 70%); bottom: 10%; left: -5%; animation: blobB 18s ease-in-out infinite; }
+@keyframes blobA { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,30px) scale(1.1)} }
+@keyframes blobB { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,-40px) scale(1.08)} }
+
+.hero-content { position: relative; z-index: 2; padding: 0 80px 96px; max-width: 900px; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; background: rgba(255,218,218,0.18); border: 1px solid rgba(255,218,218,0.35); border-radius: 999px; font-size: .72rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: #FFD0D0; margin-bottom: 24px; }
+.hero-dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,94,94,0.6)} 50%{box-shadow:0 0 0 8px rgba(255,94,94,0)} }
+.hero-label { font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 700; letter-spacing: .08em; color: rgba(255,255,255,0.65); text-transform: uppercase; margin-bottom: 16px; display: block; }
+.hero-title { font-size: clamp(3.6rem, 8vw, 7rem); font-weight: 800; line-height: .95; letter-spacing: -4px; color: #fff; margin-bottom: 32px; }
+.hero-title em { font-style: normal; color: var(--primary); }
+.hero-sub { font-size: clamp(1rem, 1.6vw, 1.2rem); font-weight: 500; color: rgba(255,255,255,0.72); line-height: 1.7; max-width: 480px; margin-bottom: 44px; }
+.hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.hero-ctas .btn-ghost { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.3); }
+.hero-ctas .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); color: #fff; }
+.scroll-hint { position: absolute; right: 80px; bottom: 96px; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 2; opacity: .55; }
+.scroll-hint span { font-size: .62rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.8); writing-mode: vertical-lr; transform: rotate(180deg); }
+.scroll-line { width: 1px; height: 56px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.5)); position: relative; overflow: hidden; }
+.scroll-line::after { content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 100%; background: #fff; animation: scrollDot 1.8s ease infinite; }
+@keyframes scrollDot { to { top: 200%; } }
+
+/* ─── PROBLEM SECTION — DARK ─── */
+#problem { background: var(--bg-dark); padding: 140px 80px; position: relative; overflow: hidden; }
+.problem-bg-photo { position: absolute; inset: 0; z-index: 0; }
+.problem-bg-photo img { width: 100%; height: 100%; object-fit: cover; opacity: 0.12; filter: grayscale(60%); }
+.problem-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(26,10,14,0.96) 0%, rgba(26,10,14,0.80) 100%); z-index: 1; }
+.problem-inner { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.problem-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); margin-bottom: 20px; display: block; }
+.problem-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; line-height: 1.06; color: #fff; margin-bottom: 24px; }
+.problem-title em { font-style: italic; color: var(--primary); }
+.problem-body { font-size: 1.05rem; font-weight: 500; color: rgba(255,255,255,0.58); line-height: 1.8; }
+
+.chat-stack { display: flex; flex-direction: column; gap: 18px; }
+.chat-bubble { display: flex; align-items: flex-start; gap: 14px; opacity: 0; transform: translateX(40px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.chat-bubble.visible { opacity: 1; transform: translateX(0); }
+.chat-bubble.left { flex-direction: row-reverse; }
+.chat-bubble.left .bubble-body { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); align-self: flex-end; border-radius: 20px 4px 20px 20px; }
+.bubble-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-deep)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; color: #fff; }
+.bubble-body { background: rgba(255,94,94,0.18); border: 1px solid rgba(255,94,94,0.28); border-radius: 4px 20px 20px 20px; padding: 14px 18px; max-width: 300px; }
+.bubble-body p { font-size: .9rem; font-weight: 500; color: rgba(255,255,255,0.9); line-height: 1.5; }
+.bubble-time { font-size: .65rem; color: rgba(255,255,255,0.35); margin-top: 5px; }
+
+/* ─── STATS STRIP ─── */
+#stats { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba(255,94,94,0.12); border-bottom: 1px solid rgba(255,94,94,0.12); }
+.stats-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 0; }
+.stat-item { text-align: center; padding: 40px; border-right: 1px solid rgba(255,255,255,0.06); }
+.stat-item:last-child { border-right: none; }
+.stat-number { font-size: clamp(3rem,6vw,5rem); font-weight: 800; letter-spacing: -3px; color: #fff; line-height: 1; display: block; }
+.stat-number span { color: var(--primary); }
+.stat-label { font-size: .85rem; font-weight: 600; color: rgba(255,255,255,0.45); letter-spacing: .06em; margin-top: 10px; display: block; }
+
+/* ─── VALUE — LIGHT ─── */
+#value { background: var(--bg); padding: 140px 80px; }
+.value-inner { max-width: 1180px; margin: 0 auto; }
+.value-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 80px; flex-wrap: wrap; gap: 24px; }
+.value-headline { font-size: clamp(2.2rem, 4.5vw, 3.8rem); font-weight: 800; letter-spacing: -2px; line-height: 1.05; color: var(--text); max-width: 540px; }
+.value-headline em { font-style: normal; color: var(--primary); }
+.value-sub { font-size: 1rem; font-weight: 500; color: var(--text-muted); line-height: 1.75; max-width: 340px; }
+.value-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+.value-card { background: #fff; border-radius: 28px; padding: 40px 36px; border: 1px solid var(--border); position: relative; overflow: hidden; opacity: 0; transform: translateY(36px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); box-shadow: 0 4px 24px rgba(77,33,42,0.06); }
+.value-card.visible { opacity: 1; transform: translateY(0); }
+.value-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-deep)); border-radius: 4px 4px 0 0; transform: scaleX(0); transform-origin: left; transition: transform .6s .2s var(--ease-out); }
+.value-card.visible::before { transform: scaleX(1); }
+.card-icon { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--primary-soft), #fff); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; flex-shrink: 0; }
+.card-icon svg { width: 26px; height: 26px; }
+.card-num { font-size: .68rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--primary-deep); margin-bottom: 14px; display: block; opacity: .6; }
+.card-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); margin-bottom: 14px; }
+.card-body { font-size: .9rem; font-weight: 500; color: var(--text-muted); line-height: 1.75; }
+.card-tag { display: inline-block; margin-top: 18px; padding: 5px 14px; background: var(--primary-soft); border-radius: 999px; font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--primary-deep); }
+
+/* ─── HOW IT WORKS — DARK ─── */
+#how { background: var(--bg-dark); padding: 140px 80px; }
+.how-inner { max-width: 1180px; margin: 0 auto; }
+.how-header { text-align: center; margin-bottom: 96px; }
+.how-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); display: block; margin-bottom: 20px; }
+.how-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; color: #fff; line-height: 1.08; }
+.how-title em { font-style: italic; color: rgba(255,255,255,0.45); }
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 40px; position: relative; }
+.steps-grid::before { content: ''; position: absolute; top: 60px; left: calc(16.67% + 20px); right: calc(16.67% + 20px); height: 1px; background: linear-gradient(90deg, transparent, rgba(255,94,94,0.3), transparent); pointer-events: none; }
+.step-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 48px 36px; text-align: center; position: relative; opacity: 0; transform: translateY(40px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.step-card.visible { opacity: 1; transform: translateY(0); }
+.step-num { font-size: 5rem; font-weight: 800; letter-spacing: -3px; color: rgba(255,255,255,0.06); line-height: 1; margin-bottom: 24px; display: block; }
+.step-icon { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, rgba(255,94,94,0.2), rgba(175,35,43,0.3)); border: 1px solid rgba(255,94,94,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+.step-icon svg { width: 28px; height: 28px; }
+.step-title { font-size: 1.15rem; font-weight: 800; color: #fff; letter-spacing: -.3px; margin-bottom: 14px; }
+.step-body { font-size: .88rem; font-weight: 500; color: rgba(255,255,255,0.5); line-height: 1.75; }
+
+/* ─── SPORTS — LIGHT ─── */
+#sports { background: var(--bg); padding: 140px 0 140px 80px; overflow: hidden; }
+.sports-inner { max-width: 1180px; margin: 0; }
+.sports-header { margin-bottom: 64px; padding-right: 80px; }
+.sports-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); display: block; margin-bottom: 18px; }
+.sports-title { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; color: var(--text); line-height: 1.06; }
+.sports-scroll { display: flex; gap: 24px; overflow-x: auto; padding-right: 80px; scrollbar-width: none; -ms-overflow-style: none; }
+.sports-scroll::-webkit-scrollbar { display: none; }
+.sport-card { flex-shrink: 0; width: 340px; height: 480px; border-radius: 28px; overflow: hidden; position: relative; cursor: none; transform-style: preserve-3d; }
+.sport-card-img { position: absolute; inset: 0; }
+.sport-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease-out); }
+.sport-card:hover .sport-card-img img { transform: scale(1.06); }
+.sport-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,10,14,0.88) 0%, rgba(26,10,14,0.3) 50%, transparent 100%); transition: background .4s; }
+.sport-card:hover .sport-card-overlay { background: linear-gradient(to top, rgba(26,10,14,0.92) 0%, rgba(26,10,14,0.5) 60%, rgba(26,10,14,0.1) 100%); }
+.sport-card-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 32px 28px; }
+.sport-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; background: rgba(255,94,94,0.25); border: 1px solid rgba(255,94,94,0.35); border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .1em; color: var(--primary); margin-bottom: 14px; }
+.sport-badge-dot { width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+.sport-name { font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -.5px; margin-bottom: 8px; }
+.sport-desc { font-size: .82rem; font-weight: 500; color: rgba(255,255,255,0.55); line-height: 1.6; }
+.sport-card-arrow { position: absolute; top: 24px; right: 24px; width: 42px; height: 42px; background: rgba(255,255,255,0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(-6px); transition: opacity .3s, transform .3s var(--ease-spring); }
+.sport-card:hover .sport-card-arrow { opacity: 1; transform: translateY(0); }
+.sport-card-arrow svg { width: 18px; height: 18px; color: #fff; }
+
+/* ─── PHONE MOCKUP SECTION — DARK ─── */
+#app-preview { background: var(--bg-dark); padding: 140px 80px; overflow: hidden; }
+.app-preview-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.app-preview-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); display: block; margin-bottom: 20px; }
+.app-preview-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; line-height: 1.06; color: #fff; margin-bottom: 24px; }
+.app-preview-title em { font-style: italic; color: rgba(255,255,255,0.45); }
+.app-preview-body { font-size: 1rem; font-weight: 500; color: rgba(255,255,255,0.55); line-height: 1.8; margin-bottom: 40px; }
+.feature-list { display: flex; flex-direction: column; gap: 18px; margin-bottom: 44px; }
+.feature-item { display: flex; align-items: flex-start; gap: 16px; }
+.feature-check { width: 26px; height: 26px; background: linear-gradient(135deg, rgba(255,94,94,0.2), rgba(175,35,43,0.3)); border: 1px solid rgba(255,94,94,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.feature-check svg { width: 12px; height: 12px; }
+.feature-text { font-size: .92rem; font-weight: 600; color: rgba(255,255,255,0.8); line-height: 1.5; }
+.feature-text span { color: rgba(255,255,255,0.45); font-weight: 500; display: block; font-size: .85rem; }
+
+.phone-mockup-wrap { position: relative; display: flex; justify-content: center; }
+.phone-outer { width: 280px; border-radius: 48px; background: linear-gradient(135deg, #2A1018, #1A0A0E); border: 8px solid #2E1218; box-shadow: 0 60px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1); overflow: hidden; will-change: transform; position: relative; }
+.phone-notch { width: 100px; height: 30px; background: #0D0308; border-radius: 0 0 20px 20px; margin: 0 auto; position: relative; z-index: 5; }
+.phone-screen { background: var(--bg); min-height: 500px; padding: 0; overflow: hidden; }
+.phone-screen-header { background: linear-gradient(135deg, #FF5E5E, #AF232B); padding: 20px 20px 28px; }
+.phone-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.phone-app-name { font-size: .9rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.phone-notif-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; }
+.phone-greeting { font-size: 1.15rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.phone-greeting span { font-weight: 500; color: rgba(255,255,255,0.75); font-size: .85rem; display: block; margin-top: 2px; }
+.phone-body { padding: 18px 16px; }
+.phone-section-label { font-size: .6rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+.phone-event-card { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; border: 1px solid rgba(175,35,43,0.08); box-shadow: 0 2px 8px rgba(77,33,42,0.06); }
+.phone-event-sport { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--primary); margin-bottom: 4px; }
+.phone-event-title { font-size: .78rem; font-weight: 800; color: var(--text); letter-spacing: -0.2px; }
+.phone-event-meta { font-size: .65rem; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.phone-event-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+.phone-avatars { display: flex; margin-left: -4px; }
+.phone-avatar { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: linear-gradient(135deg, var(--primary), var(--primary-deep)); display: flex; align-items: center; justify-content: center; font-size: .45rem; font-weight: 700; color: #fff; margin-left: -6px; }
+.phone-avatar:first-child { margin-left: 0; }
+.phone-join-btn { height: 26px; padding: 0 12px; background: linear-gradient(135deg, var(--primary), var(--primary-deep)); border-radius: 999px; font-size: .65rem; font-weight: 700; color: #fff; border: none; }
+
+/* ─── SAFETY SECTION — LIGHT ─── */
+#safety { background: var(--bg); padding: 140px 80px; }
+.safety-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.safety-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); display: block; margin-bottom: 20px; }
+.safety-title { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -2px; line-height: 1.06; color: var(--text); margin-bottom: 24px; }
+.safety-body { font-size: 1rem; font-weight: 500; color: var(--text-muted); line-height: 1.8; margin-bottom: 36px; }
+.verify-flow { display: flex; flex-direction: column; gap: 0; }
+.verify-step { display: flex; gap: 20px; align-items: flex-start; position: relative; opacity: 0; transform: translateX(-30px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.verify-step.visible { opacity: 1; transform: translateX(0); }
+.verify-step-line { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+.verify-circle { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-soft), #fff); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.verify-circle svg { width: 20px; height: 20px; }
+.verify-connector { width: 2px; height: 48px; background: linear-gradient(to bottom, var(--border), transparent); margin: 4px auto; }
+.verify-step:last-child .verify-connector { display: none; }
+.verify-content { padding-bottom: 48px; }
+.verify-step:last-child .verify-content { padding-bottom: 0; }
+.verify-label { font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--primary-deep); margin-bottom: 6px; display: block; }
+.verify-desc { font-size: .9rem; font-weight: 500; color: var(--text-muted); line-height: 1.6; }
+
+.safety-visual { position: relative; }
+.safety-card { background: #fff; border-radius: 28px; padding: 36px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(77,33,42,0.1); }
+.safety-badge-large { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg, var(--primary-soft), rgba(255,94,94,0.1)); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+.safety-badge-large svg { width: 34px; height: 34px; }
+.safety-card h3 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); margin-bottom: 10px; }
+.safety-card p { font-size: .9rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
+.safety-checklist { display: flex; flex-direction: column; gap: 14px; }
+.safety-check { display: flex; align-items: center; gap: 14px; }
+.check-circle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(47,142,109,0.15), rgba(47,142,109,0.08)); border: 1.5px solid rgba(47,142,109,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.check-circle svg { width: 13px; height: 13px; }
+.check-text { font-size: .88rem; font-weight: 600; color: var(--text); }
+.safety-float-card { position: absolute; right: -24px; top: 50%; transform: translateY(-50%); background: #fff; border-radius: 18px; padding: 18px 20px; border: 1px solid var(--border); box-shadow: 0 16px 48px rgba(77,33,42,0.14); min-width: 200px; }
+.float-verified { display: flex; align-items: center; gap: 12px; }
+.float-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(47,142,109,0.15), rgba(47,142,109,0.05)); display: flex; align-items: center; justify-content: center; }
+.float-icon svg { width: 20px; height: 20px; }
+.float-text strong { font-size: .9rem; font-weight: 800; color: var(--text); display: block; }
+.float-text span { font-size: .75rem; color: var(--text-muted); }
+
+/* ─── TESTIMONIALS — DARK ─── */
+#testimonials { background: var(--bg-dark); padding: 140px 0; overflow: hidden; }
+.testimonials-header { padding: 0 80px; margin-bottom: 64px; }
+.testimonials-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); display: block; margin-bottom: 16px; }
+.testimonials-title { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; letter-spacing: -2px; color: #fff; line-height: 1.08; }
+.testimonials-track { display: flex; gap: 24px; padding: 0 80px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; cursor: grab; user-select: none; }
+.testimonials-track::-webkit-scrollbar { display: none; }
+.testimonials-track.grabbing { cursor: grabbing; }
+.testimonial-card { flex-shrink: 0; width: 380px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px 36px; }
+.testimonial-stars { display: flex; gap: 4px; margin-bottom: 20px; }
+.testimonial-stars svg { width: 16px; height: 16px; }
+.testimonial-quote { font-size: 1.05rem; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.7; margin-bottom: 28px; font-style: italic; }
+.testimonial-quote::before { content: '"'; color: var(--primary); font-size: 1.5rem; font-style: normal; line-height: 0; vertical-align: -0.3em; margin-right: 4px; }
+.testimonial-author { display: flex; align-items: center; gap: 14px; }
+.author-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-deep)); display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+.author-name { font-size: .88rem; font-weight: 700; color: #fff; }
+.author-meta { font-size: .75rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.author-badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; background: rgba(47,142,109,0.2); border: 1px solid rgba(47,142,109,0.3); border-radius: 999px; font-size: .62rem; font-weight: 700; color: #5DC49B; margin-top: 4px; }
+.author-badge svg { width: 9px; height: 9px; }
+
+/* ─── CTA SECTION — LIGHT ─── */
+#cta { background: var(--bg); padding: 140px 80px; }
+.cta-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.cta-text .section-tag { font-size: .68rem; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; color: var(--primary-deep); display: block; margin-bottom: 20px; }
+.cta-title { font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 800; letter-spacing: -2px; line-height: 1.04; color: var(--text); margin-bottom: 24px; }
+.cta-title em { font-style: normal; color: var(--primary); }
+.cta-body { font-size: 1rem; font-weight: 500; color: var(--text-muted); line-height: 1.8; margin-bottom: 40px; }
+.cta-form { display: flex; gap: 12px; flex-wrap: wrap; }
+.cta-input { flex: 1; min-width: 240px; height: 58px; padding: 0 24px; background: #fff; border: 1.5px solid var(--border); border-radius: 999px; font-family: var(--font); font-size: .92rem; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
+.cta-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,94,94,0.1); }
+.cta-input::placeholder { color: var(--text-soft); }
+.cta-note { font-size: .78rem; color: var(--text-soft); margin-top: 14px; line-height: 1.6; }
+.cta-visual { display: flex; justify-content: center; }
+.cta-phone-wrap { position: relative; }
+.phone-glow { position: absolute; inset: -40px; background: radial-gradient(circle at center, rgba(255,94,94,0.15), transparent 70%); border-radius: 50%; pointer-events: none; }
+
+/* ─── FOOTER ─── */
+footer { background: var(--bg-dark-2); padding: 80px; border-top: 1px solid rgba(255,255,255,0.05); }
+.footer-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+.footer-brand .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: -1.5px; color: #fff; display: block; margin-bottom: 16px; }
+.footer-brand .logo span { color: var(--primary); }
+.footer-brand p { font-size: .88rem; color: rgba(255,255,255,0.4); line-height: 1.75; max-width: 280px; }
+.footer-col h5 { font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 20px; }
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.footer-col ul li a { text-decoration: none; font-size: .88rem; font-weight: 500; color: rgba(255,255,255,0.5); transition: color .2s; }
+.footer-col ul li a:hover { color: rgba(255,255,255,0.9); }
+.footer-bottom { max-width: 1180px; margin: 48px auto 0; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+.footer-bottom p { font-size: .8rem; color: rgba(255,255,255,0.25); }
+.footer-bottom .hive-mark { font-weight: 800; color: var(--primary); }
+@media (max-width: 768px) {
+  footer { padding: 60px 24px; }
+  .footer-inner { grid-template-columns: 1fr; gap: 40px; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+/* ─── ANIMATIONS / REVEAL ─── */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+.anim-reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.anim-reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1024px) {
+  #hero .hero-content { padding: 0 40px 80px; }
+  .problem-inner, .safety-inner, .app-preview-inner, .cta-inner { grid-template-columns: 1fr; gap: 56px; }
+  .value-grid { grid-template-columns: 1fr; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .stats-inner { grid-template-columns: 1fr; }
+  .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 32px; }
+  .stat-item:last-child { border-bottom: none; }
+  #problem, #stats, #value, #how, #sports, #app-preview, #safety, #testimonials, #cta { padding: 100px 40px; }
+  #sports { padding: 100px 0 100px 40px; }
+  .sports-scroll { padding-right: 40px; }
+  .testimonials-header { padding: 0 40px; }
+  .testimonials-track { padding: 0 40px; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .hero-content { padding: 0 24px 72px !important; }
+  .hero-title { letter-spacing: -2px; }
+  #problem, #stats, #value, #how, #sports, #app-preview, #safety, #testimonials, #cta { padding: 80px 24px; }
+  #sports { padding: 80px 0 80px 24px; }
+  .sports-scroll { padding-right: 24px; }
+  .sport-card { width: 280px; height: 400px; }
+  .testimonials-header { padding: 0 24px; }
+  .testimonials-track { padding: 0 24px; }
+  .testimonial-card { width: 300px; }
+  footer { padding: 60px 24px; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .value-header { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">H<span>I</span>VE</a>
+  <ul class="nav-links">
+    <li><a href="#value">Qué es</a></li>
+    <li><a href="#sports">Disciplinas</a></li>
+    <li><a href="#safety">Seguridad</a></li>
+    <li><a href="#cta">Beta</a></li>
+  </ul>
+  <button class="nav-cta magnetic" type="button" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Únete</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-photo" id="hero-photo">
+    <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1600&q=85" alt="Mujeres corriendo" id="hero-img"/>
+  </div>
+  <div class="hero-blobs">
+    <div class="blob blob-a" id="blob-a"></div>
+    <div class="blob blob-b" id="blob-b"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="hero-dot"></span>
+      Primera app femenina de deporte en Chile
+    </div>
+    <span class="hero-label">Hive</span>
+    <h1 class="hero-title">Mejor<br/><em>acompañadas.</em></h1>
+    <p class="hero-sub">Comunidad de mujeres verificadas para salir a correr, pedalear y explorar sin miedo. Seguras, juntas, siempre.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary magnetic" type="button" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Quiero ser Beta Tester
+      </button>
+      <button class="btn-ghost magnetic" type="button" onclick="document.getElementById('value').scrollIntoView({behavior:'smooth'})">Ver cómo funciona</button>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     PROBLEM — DARK
+══════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="problem-bg-photo">
+    <img src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=1400&q=75" alt=""/>
+  </div>
+  <div class="problem-overlay"></div>
+  <div class="problem-inner">
+    <div class="problem-text anim-reveal">
+      <span class="section-tag">El problema</span>
+      <h2 class="problem-title">¿Te suenan<br/><em>estos mensajes?</em></h2>
+      <p class="problem-body">Cada vez que sales a entrenar sola, existe una conversación silenciosa de miedo e incertidumbre. No debería ser así.</p>
+    </div>
+    <div class="chat-stack" id="chat-stack">
+      <div class="chat-bubble" data-delay="0">
+        <div class="bubble-avatar">PM</div>
+        <div class="bubble-body">
+          <p>Les aviso cuando llegue... ando sola esta mañana</p>
+          <div class="bubble-time">07:14</div>
+        </div>
+      </div>
+      <div class="chat-bubble left" data-delay="200">
+        <div class="bubble-avatar">SL</div>
+        <div class="bubble-body">
+          <p>Te envié ubicación en vivo, avísame cuando estés segura</p>
+          <div class="bubble-time">07:31</div>
+        </div>
+      </div>
+      <div class="chat-bubble" data-delay="400">
+        <div class="bubble-avatar">MR</div>
+        <div class="bubble-body">
+          <p>Si no llego a las 3, pasó algo. Tú sabes qué hacer</p>
+          <div class="bubble-time">14:22</div>
+        </div>
+      </div>
+      <div class="chat-bubble left" data-delay="600">
+        <div class="bubble-avatar">KV</div>
+        <div class="bubble-body">
+          <p>Mejor vamos en grupo... solas da miedo esa ruta</p>
+          <div class="bubble-time">19:05</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     STATS — DARK
+══════════════════════════════════════════════ -->
+<div id="stats">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <strong class="stat-number" data-target="7" data-suffix="/10"><span class="count-num">0</span><span>/10</span></strong>
+      <span class="stat-label">mujeres sienten miedo al entrenar solas en espacios públicos</span>
+    </div>
+    <div class="stat-item">
+      <strong class="stat-number" data-target="90" data-suffix="%"><span class="count-num">0</span><span>%</span></strong>
+      <span class="stat-label">de las apps de fitness no tienen ninguna herramienta de seguridad real</span>
+    </div>
+    <div class="stat-item">
+      <strong class="stat-number" data-target="2400" data-suffix="+"><span class="count-num">0</span><span>+</span></strong>
+      <span class="stat-label">mujeres ya en lista de espera para unirse a Hive</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VALUE — LIGHT
+══════════════════════════════════════════════ -->
+<section id="value">
+  <div class="value-inner">
+    <div class="value-header anim-reveal">
+      <div>
+        <h2 class="value-headline">La primera app<br/><em>100% femenina</em><br/>de deporte en Chile</h2>
+      </div>
+      <p class="value-sub">Hive no es Strava. No es Garmin. Es tu colmena: el lugar donde mujeres que entrenan duro encuentran compañía verificada y segura.</p>
+    </div>
+    <div class="value-grid">
+      <div class="value-card" data-delay="0">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <span class="card-num">01 —</span>
+        <h3 class="card-title">Seguridad Inteligente</h3>
+        <p class="card-body">Solo mujeres verificadas con cédula de identidad y selfie en vivo. Cada miembro es real. Cada salida, confiable. Check-ins automáticos y contactos de emergencia.</p>
+        <span class="card-tag">ID Verificado</span>
+      </div>
+      <div class="value-card" data-delay="150">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/><path d="M20 21a8 8 0 10-16 0"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+        </div>
+        <span class="card-num">02 —</span>
+        <h3 class="card-title">Comunidad que Apaña</h3>
+        <p class="card-body">Encuentra mujeres con tu ritmo, tu disciplina y tus horarios. Únete a salidas organizadas por lideresas verificadas. Feed de actividad real, no likes vacíos.</p>
+        <span class="card-tag">Social-Fitness</span>
+      </div>
+      <div class="value-card" data-delay="300">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <span class="card-num">03 —</span>
+        <h3 class="card-title">Ecosistema Premium</h3>
+        <p class="card-body">Más que una app. Descuentos en marcas deportivas, eventos exclusivos, retos por disciplina. Ser parte de Hive es un estilo de vida, no solo un registro.</p>
+        <span class="card-tag">Beneficios Exclusivos</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     HOW IT WORKS — DARK
+══════════════════════════════════════════════ -->
+<section id="how">
+  <div class="how-inner">
+    <div class="how-header anim-reveal">
+      <span class="how-tag">Cómo funciona</span>
+      <h2 class="how-title">Tres pasos para entrar<br/><em>a la colmena</em></h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card" data-delay="0">
+        <span class="step-num">01</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <h3 class="step-title">Descarga y regístrate</h3>
+        <p class="step-body">Crea tu cuenta con correo o número de teléfono. Solo toma 2 minutos. Disponible en iOS y Android.</p>
+      </div>
+      <div class="step-card" data-delay="150">
+        <span class="step-num">02</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h3 class="step-title">Verifica tu identidad</h3>
+        <p class="step-body">Sube tu cédula de identidad y una selfie en vivo. Nuestro equipo revisa en menos de 24 horas para confirmar que eres tú.</p>
+      </div>
+      <div class="step-card" data-delay="300">
+        <span class="step-num">03</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="step-title">Únete a salidas</h3>
+        <p class="step-body">Explora eventos cerca de ti, elige tu disciplina y únete a salidas con mujeres verificadas. Sin miedo, con comunidad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SPORTS — LIGHT
+══════════════════════════════════════════════ -->
+<section id="sports">
+  <div class="sports-inner">
+    <div class="sports-header anim-reveal">
+      <span class="sports-tag">Disciplinas</span>
+      <h2 class="sports-title">Cinco mundos,<br/>una colmena</h2>
+    </div>
+    <div class="sports-scroll" id="sports-scroll">
+      <div class="sport-card" data-sport="running">
+        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=700&q=80" alt="Running"/></div>
+        <div class="sport-card-overlay"></div>
+        <div class="sport-card-content">
+          <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
+          <div class="sport-name">Running</div>
+          <div class="sport-desc">Ritmos compartidos para ciudad y parque. Grupos por pace, seguras en cada kilómetro.</div>
+        </div>
+        <div class="sport-card-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </div>
+      </div>
+      <div class="sport-card" data-sport="cycling">
+        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=700&q=80" alt="Ciclismo de Ruta"/></div>
+        <div class="sport-card-overlay"></div>
+        <div class="sport-card-content">
+          <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
+          <div class="sport-name">Ciclismo Ruta</div>
+          <div class="sport-desc">Pelotones seguros, puntos de encuentro claros. Lideresas certificadas en cada salida.</div>
+        </div>
+        <div class="sport-card-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </div>
+      </div>
+      <div class="sport-card" data-sport="mtb">
+        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1544191696-15693072e0de?auto=format&fit=crop&w=700&q=80" alt="MTB"/></div>
+        <div class="sport-card-overlay"></div>
+        <div class="sport-card-content">
+          <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
+          <div class="sport-name">MTB</div>
+          <div class="sport-desc">Salidas técnicas con líderes verificadas. Trazas, desnivel y apoyo real en cada descenso.</div>
+        </div>
+        <div class="sport-card-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </div>
+      </div>
+      <div class="sport-card" data-sport="trekking">
+        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=700&q=80" alt="Trekking"/></div>
+        <div class="sport-card-overlay"></div>
+        <div class="sport-card-content">
+          <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
+          <div class="sport-name">Trekking</div>
+          <div class="sport-desc">Senderos con comunidad, check-ins previos y planes de emergencia visibles.</div>
+        </div>
+        <div class="sport-card-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </div>
+      </div>
+      <div class="sport-card" data-sport="trail">
+        <div class="sport-card-img"><img src="https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&w=700&q=80" alt="Trail Running"/></div>
+        <div class="sport-card-overlay"></div>
+        <div class="sport-card-content">
+          <div class="sport-badge"><span class="sport-badge-dot"></span> Activo</div>
+          <div class="sport-name">Trail Running</div>
+          <div class="sport-desc">Altimetría, apoyo mutuo y planes visibles. El monte tiene nombre de mujer.</div>
+        </div>
+        <div class="sport-card-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     APP PREVIEW — DARK
+══════════════════════════════════════════════ -->
+<section id="app-preview">
+  <div class="app-preview-inner">
+    <div class="app-preview-text anim-reveal">
+      <span class="section-tag">Dentro de la colmena</span>
+      <h2 class="app-preview-title">¿Qué pasa<br/><em>adentro?</em></h2>
+      <p class="app-preview-body">Hive es tu comunidad deportiva personalizada. Desde el momento en que te verificas, accedes a un ecosistema diseñado por y para mujeres que se mueven.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="feature-text">
+            Feed de eventos cercanos en tiempo real
+            <span>Filtra por disciplina, distancia y dificultad</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="feature-text">
+            Perfil público verificado con historial de salidas
+            <span>Construye tu reputación en la comunidad</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="feature-text">
+            Notificaciones de check-in y alertas de seguridad
+            <span>Tu red sabe que estás bien</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="feature-text">
+            Crea tus propios eventos y lidera salidas
+            <span>Conviértete en liderasa verificada</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary magnetic" type="button" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+        Quiero acceso anticipado
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="phone-mockup-wrap">
+      <div class="phone-outer" id="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-screen-header">
+            <div class="phone-header-top">
+              <span class="phone-app-name">HIVE</span>
+              <span class="phone-notif-dot"></span>
+            </div>
+            <div class="phone-greeting">
+              Hola, Valentina
+              <span>¿A qué salimos hoy?</span>
+            </div>
+          </div>
+          <div class="phone-body">
+            <div class="phone-section-label">Eventos cerca de ti</div>
+            <div class="phone-event-card">
+              <div class="phone-event-sport">Running</div>
+              <div class="phone-event-title">Sunrise Tempo Costanera</div>
+              <div class="phone-event-meta">Dom · 07:15 · Parque Bicentenario</div>
+              <div class="phone-event-row">
+                <div class="phone-avatars">
+                  <div class="phone-avatar">PM</div>
+                  <div class="phone-avatar">SL</div>
+                  <div class="phone-avatar">MR</div>
+                  <div class="phone-avatar">+15</div>
+                </div>
+                <button class="phone-join-btn">Unirse</button>
+              </div>
+            </div>
+            <div class="phone-event-card">
+              <div class="phone-event-sport">Ciclismo Ruta</div>
+              <div class="phone-event-title">Ruta Coral al Cajón</div>
+              <div class="phone-event-meta">Sáb · 08:30 · Plaza San Enrique</div>
+              <div class="phone-event-row">
+                <div class="phone-avatars">
+                  <div class="phone-avatar">KV</div>
+                  <div class="phone-avatar">AL</div>
+                  <div class="phone-avatar">+10</div>
+                </div>
+                <button class="phone-join-btn">Unirse</button>
+              </div>
+            </div>
+            <div class="phone-event-card">
+              <div class="phone-event-sport">Trail Running</div>
+              <div class="phone-event-title">El Monte tiene Nombre</div>
+              <div class="phone-event-meta">Vie · 06:00 · Farellones</div>
+              <div class="phone-event-row">
+                <div class="phone-avatars">
+                  <div class="phone-avatar">BR</div>
+                  <div class="phone-avatar">+8</div>
+                </div>
+                <button class="phone-join-btn">Unirse</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SAFETY — LIGHT
+══════════════════════════════════════════════ -->
+<section id="safety">
+  <div class="safety-inner">
+    <div class="safety-text">
+      <span class="section-tag anim-reveal">Solo mujeres verificadas</span>
+      <h2 class="safety-title anim-reveal">Seguridad no<br/>es un feature.<br/>Es el cimiento.</h2>
+      <p class="safety-body anim-reveal">Cada mujer que entra a Hive pasa por verificación de identidad real. Sin excepciones. Así funciona nuestra colmena.</p>
+      <div class="verify-flow">
+        <div class="verify-step" data-delay="0">
+          <div class="verify-step-line">
+            <div class="verify-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="13" y2="11"/></svg>
+            </div>
+            <div class="verify-connector"></div>
+          </div>
+          <div class="verify-content">
+            <span class="verify-label">Paso 1 — Cédula</span>
+            <p class="verify-desc">Fotografía frente y serial de tu cédula de identidad. Encriptado en tránsito y en reposo.</p>
+          </div>
+        </div>
+        <div class="verify-step" data-delay="200">
+          <div class="verify-step-line">
+            <div class="verify-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><rect x="4" y="16" width="16" height="6" rx="1"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+            </div>
+            <div class="verify-connector"></div>
+          </div>
+          <div class="verify-content">
+            <span class="verify-label">Paso 2 — Selfie en vivo</span>
+            <p class="verify-desc">Una foto en tiempo real para confirmar que eres la persona de tu documento. No se admiten fotos de pantalla.</p>
+          </div>
+        </div>
+        <div class="verify-step" data-delay="400">
+          <div class="verify-step-line">
+            <div class="verify-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div class="verify-connector"></div>
+          </div>
+          <div class="verify-content">
+            <span class="verify-label">Paso 3 — Revisión humana</span>
+            <p class="verify-desc">Nuestro equipo revisa cada solicitud en menos de 24 horas. Cero bots, cero automatización en esta parte.</p>
+          </div>
+        </div>
+        <div class="verify-step" data-delay="600">
+          <div class="verify-step-line">
+            <div class="verify-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+          </div>
+          <div class="verify-content">
+            <span class="verify-label">Acceso a la colmena</span>
+            <p class="verify-desc">Bienvenida. Ahora eres parte de una comunidad donde cada mujer fue verificada igual que tú.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="safety-visual anim-reveal">
+      <div class="safety-card">
+        <div class="safety-badge-large">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#AF232B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <h3>Protocolo de Seguridad Hive</h3>
+        <p>Verificación de 4 pasos que garantiza que cada mujer en la app es quien dice ser. Tu seguridad es nuestra responsabilidad.</p>
+        <div class="safety-checklist">
+          <div class="safety-check">
+            <div class="check-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="check-text">Identidad verificada con documento real</span>
+          </div>
+          <div class="safety-check">
+            <div class="check-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="check-text">Lideresas de eventos con certificación extra</span>
+          </div>
+          <div class="safety-check">
+            <div class="check-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="check-text">Check-ins automáticos durante la salida</span>
+          </div>
+          <div class="safety-check">
+            <div class="check-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="check-text">Red de contactos de emergencia integrada</span>
+          </div>
+          <div class="safety-check">
+            <div class="check-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="check-text">Datos encriptados, revisión humana obligatoria</span>
+          </div>
+        </div>
+      </div>
+      <div class="safety-float-card">
+        <div class="float-verified">
+          <div class="float-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="float-text">
+            <strong>Valentina M.</strong>
+            <span>Verificada · Running</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     TESTIMONIALS — DARK
+══════════════════════════════════════════════ -->
+<section id="testimonials">
+  <div class="testimonials-header anim-reveal">
+    <span class="testimonials-tag">Ellas lo dicen</span>
+    <h2 class="testimonials-title">Lo que siente la colmena</h2>
+  </div>
+  <div class="testimonials-track" id="testimonials-track">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <p class="testimonial-quote">Por fin puedo salir a correr el domingo a las 6am sabiendo que alguien más sabe dónde estoy y que todas son reales. Eso no lo da ninguna otra app.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">PM</div>
+        <div>
+          <div class="author-name">Paula Morales</div>
+          <div class="author-meta">Running · Santiago</div>
+          <div class="author-badge">
+            <svg viewBox="0 0 24 24" fill="#5DC49B" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Verificada
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <p class="testimonial-quote">Llevo dos años haciendo trail sola porque no encontraba grupo. Con Hive encontré a cuatro mujeres de mi nivel en una semana. El sábado hicimos Farellones.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">SL</div>
+        <div>
+          <div class="author-name">Sofía Luengo</div>
+          <div class="author-meta">Trail Running · Vitacura</div>
+          <div class="author-badge">
+            <svg viewBox="0 0 24 24" fill="#5DC49B" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Verificada
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <p class="testimonial-quote">Organizé mi primera salida ciclista como liderasa. 12 mujeres verificadas, ruta segura, punto de encuentro claro. Nadie se quedó atrás. Eso es Hive.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">KV</div>
+        <div>
+          <div class="author-name">Karina Varela</div>
+          <div class="author-meta">Ciclismo Ruta · Providencia</div>
+          <div class="author-badge">
+            <svg viewBox="0 0 24 24" fill="#5DC49B" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Liderasa
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FF5E5E" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <p class="testimonial-quote">Hice trekking por primera vez con un grupo Hive. Me fui sintiéndome parte de algo. Ahora organizo mis propias salidas cada mes. La colmena me cambió.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">MR</div>
+        <div>
+          <div class="author-name">Macarena Ríos</div>
+          <div class="author-meta">Trekking · Las Condes</div>
+          <div class="author-badge">
+            <svg viewBox="0 0 24 24" fill="#5DC49B" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Verificada
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CTA — LIGHT
+══════════════════════════════════════════════ -->
+<section id="cta">
+  <div class="cta-inner">
+    <div class="cta-text anim-reveal">
+      <span class="section-tag">Beta Tester</span>
+      <h2 class="cta-title">Sé de las<br/><em>primeras</em><br/>en entrar.</h2>
+      <p class="cta-body">Hive está en desarrollo activo. Estamos buscando mujeres apasionadas del deporte para probar la app antes del lanzamiento oficial. Cupos limitados, acceso gratuito permanente.</p>
+      <div class="cta-form">
+        <input class="cta-input" type="email" placeholder="tu@correo.com" id="beta-email" autocomplete="email"/>
+        <button class="btn-primary magnetic" type="button" id="beta-submit">
+          Quiero ser Beta
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <p class="cta-note" id="beta-msg">Sin spam. Solo te avisamos cuando esté lista tu invitación. Puedes cancelar cuando quieras.</p>
+    </div>
+    <div class="cta-visual">
+      <div class="cta-phone-wrap">
+        <div class="phone-glow"></div>
+        <div class="phone-outer" style="width:260px; transform: rotate(-4deg)">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-screen-header" style="padding-bottom:32px">
+              <div class="phone-header-top">
+                <span class="phone-app-name">HIVE</span>
+                <span class="phone-notif-dot"></span>
+              </div>
+              <div class="phone-greeting">
+                ¡Bienvenida, Abeja!
+                <span>Tu verificación fue aprobada</span>
+              </div>
+            </div>
+            <div class="phone-body">
+              <div style="background: linear-gradient(135deg, rgba(47,142,109,0.1), rgba(47,142,109,0.05)); border:1px solid rgba(47,142,109,0.2); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; align-items:center; gap:12px;">
+                <div style="width:36px;height:36px;background:rgba(47,142,109,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F8E6D" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:.72rem;font-weight:800;color:#2F8E6D;">¡Verificada!</div>
+                  <div style="font-size:.65rem;color:var(--text-muted);">Ya puedes unirte a eventos</div>
+                </div>
+              </div>
+              <div class="phone-section-label" style="margin-top:8px">Tu primer evento sugerido</div>
+              <div class="phone-event-card">
+                <div class="phone-event-sport">Running</div>
+                <div class="phone-event-title">Bienvenida a la colmena</div>
+                <div class="phone-event-meta">Próx. sábado · 08:00 · Parque Araucano</div>
+                <div class="phone-event-row">
+                  <div class="phone-avatars">
+                    <div class="phone-avatar">PM</div>
+                    <div class="phone-avatar">SL</div>
+                    <div class="phone-avatar">+6</div>
+                  </div>
+                  <button class="phone-join-btn">Unirse</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="logo">H<span>I</span>VE</span>
+      <p>La primera comunidad deportiva 100% femenina de Chile. Verificadas, seguras, juntas.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Producto</h5>
+      <ul>
+        <li><a href="#value">Qué es Hive</a></li>
+        <li><a href="#sports">Disciplinas</a></li>
+        <li><a href="#safety">Seguridad</a></li>
+        <li><a href="#how">Cómo funciona</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Comunidad</h5>
+      <ul>
+        <li><a href="#cta">Beta Testers</a></li>
+        <li><a href="#testimonials">Historias</a></li>
+        <li><a href="#">Liderasas</a></li>
+        <li><a href="#">Eventos</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Legal</h5>
+      <ul>
+        <li><a href="#">Privacidad</a></li>
+        <li><a href="#">Términos de uso</a></li>
+        <li><a href="#">Política de verificación</a></li>
+        <li><a href="#">Contacto</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 <span class="hive-mark">HIVE</span>. Hecho con amor en Chile 🇨🇱</p>
+    <p>Primera app femenina de deporte en Latinoamérica</p>
+  </div>
+</footer>
+
+<script>
+/* ══ CURSOR ══ */
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let cx = 0, cy = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; cursor.style.left = cx+'px'; cursor.style.top = cy+'px'; });
+(function animRing() {
+  rx += (cx - rx) * 0.12;
+  ry += (cy - ry) * 0.12;
+  cursorRing.style.left = rx+'px';
+  cursorRing.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.sport-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width='20px'; cursor.style.height='20px'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width='10px'; cursor.style.height='10px'; });
+});
+
+/* ══ NAV SCROLL STATE ══ */
+const nav = document.getElementById('nav');
+const darkSections = ['problem','stats','how','app-preview','testimonials'];
+const sectionEls = {};
+darkSections.forEach(id => { const el = document.getElementById(id); if(el) sectionEls[id]=el; });
+function updateNav() {
+  const y = window.scrollY;
+  nav.classList.toggle('scrolled', y > 60);
+  const inDark = Object.values(sectionEls).some(el => {
+    const r = el.getBoundingClientRect();
+    return r.top < 40 && r.bottom > 40;
+  });
+  nav.classList.toggle('dark', inDark);
+  document.body.classList.toggle('dark-section', inDark);
+}
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+
+/* ══ PARALLAX — HERO BG + BLOBS ══ */
+const heroImg = document.getElementById('hero-img');
+const blobA = document.getElementById('blob-a');
+const blobB = document.getElementById('blob-b');
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (heroImg) heroImg.style.transform = `translateY(${y * 0.35}px)`;
+      if (blobA) blobA.style.transform = `translate(${y * -0.06}px, ${y * 0.12}px)`;
+      if (blobB) blobB.style.transform = `translate(${y * 0.08}px, ${y * -0.1}px)`;
+      ticking = false;
+    });
+    ticking = true;
+  }
+}, { passive: true });
+
+/* ══ MOUSE PARALLAX ON BLOBS ══ */
+document.addEventListener('mousemove', e => {
+  const mx = (e.clientX / window.innerWidth - 0.5) * 30;
+  const my = (e.clientY / window.innerHeight - 0.5) * 20;
+  if (blobA) blobA.style.transform = `translate(${mx * 1.2}px, ${my * 0.8}px)`;
+  if (blobB) blobB.style.transform = `translate(${mx * -0.8}px, ${my * 1.2}px)`;
+});
+
+/* ══ PHONE MOCKUP TILT (mouse-only, no scroll rotation) ══ */
+const phoneMockup = document.getElementById('phone-mockup');
+if (phoneMockup) {
+  const phoneSection = phoneMockup.closest('section');
+  phoneMockup.style.transform = 'perspective(900px) rotateY(-8deg) rotateX(4deg)';
+  phoneSection.addEventListener('mousemove', e => {
+    const wrap = phoneMockup.parentElement;
+    const rect = wrap.getBoundingClientRect();
+    const mx = Math.max(-1, Math.min(1, (e.clientX - rect.left - rect.width / 2) / (rect.width / 2)));
+    const my = Math.max(-1, Math.min(1, (e.clientY - rect.top - rect.height / 2) / (rect.height / 2)));
+    phoneMockup.style.transform = `perspective(900px) rotateY(${mx * 14}deg) rotateX(${-my * 9}deg)`;
+    phoneMockup.style.transition = 'transform .15s ease-out';
+  });
+  phoneSection.addEventListener('mouseleave', () => {
+    phoneMockup.style.transform = 'perspective(900px) rotateY(-8deg) rotateX(4deg)';
+    phoneMockup.style.transition = 'transform .6s cubic-bezier(.22,1,.36,1)';
+  });
+}
+
+/* ══ INTERSECTION OBSERVER — REVEALS ══ */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const delay = e.target.dataset.delay ? parseInt(e.target.dataset.delay) : 0;
+      setTimeout(() => e.target.classList.add('visible'), delay);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.anim-reveal, .value-card, .step-card, .verify-step, .chat-bubble').forEach(el => revealObs.observe(el));
+
+/* ══ SPORT CARDS 3D TILT ══ */
+document.querySelectorAll('.sport-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const mx = (e.clientX - r.left) / r.width - 0.5;
+    const my = (e.clientY - r.top) / r.height - 0.5;
+    card.style.transform = `perspective(800px) rotateY(${mx * 16}deg) rotateX(${-my * 10}deg) scale(1.02)`;
+    card.style.transition = 'none';
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform .5s var(--ease-out)';
+  });
+});
+
+/* ══ COUNT-UP NUMBERS ══ */
+function countUp(el, target, duration = 1800) {
+  const start = performance.now();
+  const isFloat = target % 1 !== 0;
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const val = ease * target;
+    el.textContent = isFloat ? val.toFixed(1) : Math.floor(val).toLocaleString('es-CL');
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toLocaleString('es-CL');
+  }
+  requestAnimationFrame(tick);
+}
+const countObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const container = e.target;
+      const target = parseFloat(container.dataset.target);
+      const numEl = container.querySelector('.count-num');
+      if (numEl) countUp(numEl, target);
+      countObs.unobserve(container);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-number[data-target]').forEach(el => countObs.observe(el));
+
+/* ══ MAGNETIC BUTTONS ══ */
+document.querySelectorAll('.magnetic').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    const mx = e.clientX - r.left - r.width / 2;
+    const my = e.clientY - r.top - r.height / 2;
+    btn.style.transform = `translate(${mx * 0.28}px, ${my * 0.28}px)`;
+    btn.style.transition = 'transform .1s';
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = '';
+    btn.style.transition = 'transform .5s var(--ease-spring)';
+  });
+});
+
+/* ══ TESTIMONIALS DRAG SCROLL ══ */
+const track = document.getElementById('testimonials-track');
+let isDown = false, startX, scrollLeft;
+track.addEventListener('mousedown', e => {
+  isDown = true;
+  track.classList.add('grabbing');
+  startX = e.pageX - track.offsetLeft;
+  scrollLeft = track.scrollLeft;
+});
+track.addEventListener('mouseleave', () => { isDown = false; track.classList.remove('grabbing'); });
+track.addEventListener('mouseup', () => { isDown = false; track.classList.remove('grabbing'); });
+track.addEventListener('mousemove', e => {
+  if (!isDown) return;
+  e.preventDefault();
+  const x = e.pageX - track.offsetLeft;
+  const walk = (x - startX) * 1.6;
+  track.scrollLeft = scrollLeft - walk;
+});
+
+/* ══ BETA FORM ══ */
+document.getElementById('beta-submit').addEventListener('click', () => {
+  const email = document.getElementById('beta-email').value.trim();
+  const msg = document.getElementById('beta-msg');
+  if (!email || !email.includes('@')) {
+    msg.textContent = 'Por favor ingresa un correo válido.';
+    msg.style.color = '#C0395A';
+    return;
+  }
+  msg.textContent = '¡Listo! Te avisamos cuando esté tu invitación. Bienvenida a la colmena 🐝';
+  msg.style.color = '#2F8E6D';
+  document.getElementById('beta-email').value = '';
+});
+
+/* ══ SPORTS HORIZONTAL SCROLL DRAG ══ */
+const sportsScroll = document.getElementById('sports-scroll');
+let sdDown = false, sdStart, sdLeft;
+sportsScroll.addEventListener('mousedown', e => { sdDown=true; sdStart=e.pageX-sportsScroll.offsetLeft; sdLeft=sportsScroll.scrollLeft; });
+sportsScroll.addEventListener('mouseleave', () => sdDown=false);
+sportsScroll.addEventListener('mouseup', () => sdDown=false);
+sportsScroll.addEventListener('mousemove', e => {
+  if(!sdDown) return;
+  e.preventDefault();
+  const x = e.pageX - sportsScroll.offsetLeft;
+  sportsScroll.scrollLeft = sdLeft - (x - sdStart) * 1.4;
+});
+</script>
+</body>
+</html>
