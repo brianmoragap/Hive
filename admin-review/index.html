@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hive Admin Review</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand-lockup">
+          <div class="brand-mark">H</div>
+          <div>
+            <p class="eyebrow">Hive Control</p>
+            <h1>Revisión de identidad</h1>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <p class="sidebar-label">Flujo</p>
+          <ol class="sidebar-steps">
+            <li>Ingresar como revisora</li>
+            <li>Abrir evidencia documental</li>
+            <li>Aprobar o rechazar con nota</li>
+            <li>Disparar correo + notificación</li>
+          </ol>
+        </div>
+
+        <div class="sidebar-card subtle">
+          <p class="sidebar-label">Seguridad</p>
+          <p class="sidebar-copy">
+            El panel usa Supabase Auth para iniciar sesión y una Edge Function para tomar la
+            decisión final.
+          </p>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <section id="login-view" class="view active">
+          <div class="login-stage">
+            <div class="stage-copy">
+              <p class="eyebrow accent">Acceso interno</p>
+              <h2>Panel de validación para revisar usuarias en espera.</h2>
+              <p>
+                Usa una cuenta que exista en <code>public.admin_users</code>. El panel solo permite
+                continuar si la sesión tiene permisos de revisión.
+              </p>
+            </div>
+
+            <form id="login-form" class="login-card">
+              <label class="field">
+                <span>Correo</span>
+                <input id="email-input" type="email" placeholder="reviewer@hive.app" required />
+              </label>
+
+              <label class="field">
+                <span>Contraseña</span>
+                <input id="password-input" type="password" placeholder="••••••••" required />
+              </label>
+
+              <button id="login-button" type="submit" class="primary-button">Entrar al panel</button>
+              <p id="login-error" class="inline-error hidden"></p>
+            </form>
+          </div>
+        </section>
+
+        <section id="app-view" class="view">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow accent">Equipo de validación</p>
+              <h2>Cola administrativa de identidades</h2>
+            </div>
+
+            <div class="topbar-actions">
+              <div class="admin-pill">
+                <span class="status-dot"></span>
+                <span id="admin-email">reviewer@hive.app</span>
+              </div>
+              <button id="logout-button" class="ghost-button" type="button">Cerrar sesión</button>
+            </div>
+          </header>
+
+          <section class="metrics-grid">
+            <article class="metric-card">
+              <span class="metric-label">Pendientes</span>
+              <strong id="pending-count">0</strong>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Aprobadas</span>
+              <strong id="approved-count">0</strong>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Rechazadas</span>
+              <strong id="rejected-count">0</strong>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Total</span>
+              <strong id="total-count">0</strong>
+            </article>
+          </section>
+
+          <section class="workspace">
+            <div class="queue-column">
+              <div class="queue-toolbar">
+                <div class="filter-group" id="status-filters">
+                  <button class="chip active" data-filter="pending" type="button">Pendientes</button>
+                  <button class="chip" data-filter="approved" type="button">Aprobadas</button>
+                  <button class="chip" data-filter="rejected" type="button">Rechazadas</button>
+                  <button class="chip" data-filter="all" type="button">Todas</button>
+                </div>
+
+                <label class="search-wrap">
+                  <input id="search-input" type="search" placeholder="Buscar por nombre, correo o RUT" />
+                </label>
+              </div>
+
+              <div id="queue-list" class="queue-list"></div>
+              <div id="queue-empty" class="empty-state hidden">
+                <h3>No hay resultados</h3>
+                <p>No se encontraron postulaciones para ese filtro.</p>
+              </div>
+            </div>
+
+            <div class="detail-column">
+              <div id="detail-empty" class="detail-empty">
+                <p class="eyebrow accent">Sin selección</p>
+                <h3>Elige una solicitud para abrir su evidencia.</h3>
+                <p>Verás la foto de cédula, el serial, los datos de onboarding y las acciones.</p>
+              </div>
+
+              <article id="detail-card" class="detail-card hidden">
+                <div class="detail-head">
+                  <div>
+                    <p id="detail-status" class="status-badge status-pending">Pendiente</p>
+                    <h3 id="detail-name">Macarena Barragán</h3>
+                    <p id="detail-email" class="muted">correo@hive.app</p>
+                  </div>
+                  <div class="identity-block">
+                    <span class="mini-label">RUT</span>
+                    <strong id="detail-rut">15.759.019-7</strong>
+                  </div>
+                </div>
+
+                <div class="detail-grid">
+                  <section class="profile-card">
+                    <div class="avatar-shell">
+                      <img id="detail-avatar" alt="Selfie de la usuaria" />
+                    </div>
+                    <div class="profile-meta">
+                      <div>
+                        <span class="mini-label">Nombre de envío</span>
+                        <strong id="detail-submission-name">Macarena Barragán</strong>
+                      </div>
+                      <div>
+                        <span class="mini-label">Teléfono</span>
+                        <strong id="detail-phone">+56 9 1234 5678</strong>
+                      </div>
+                      <div>
+                        <span class="mini-label">Fecha nacimiento</span>
+                        <strong id="detail-birth-date">1995-04-22</strong>
+                      </div>
+                      <div>
+                        <span class="mini-label">Enviado</span>
+                        <strong id="detail-submitted-at">21 abr 2026</strong>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="documents-card">
+                    <div class="docs-header">
+                      <h4>Evidencia</h4>
+                      <button id="refresh-docs-button" class="ghost-button small" type="button">
+                        Refrescar enlaces
+                      </button>
+                    </div>
+                    <div class="docs-grid">
+                      <figure class="doc-frame">
+                        <figcaption>Frente de cédula</figcaption>
+                        <img id="front-doc-image" alt="Documento frontal" />
+                      </figure>
+                      <figure class="doc-frame">
+                        <figcaption>Serial de cédula</figcaption>
+                        <img id="serial-doc-image" alt="Documento serial" />
+                      </figure>
+                    </div>
+                  </section>
+                </div>
+
+                <section class="decision-card">
+                  <div class="decision-header">
+                    <div>
+                      <p class="eyebrow accent">Resolución</p>
+                      <h4>Registrar decisión y notificar</h4>
+                    </div>
+                    <p class="muted">
+                      Al aprobar o rechazar se actualiza el perfil, se agrega una notificación en
+                      la app y se intenta enviar correo transaccional.
+                    </p>
+                  </div>
+
+                  <label class="field full">
+                    <span>Nota del revisor</span>
+                    <textarea
+                      id="reviewer-notes"
+                      rows="5"
+                      placeholder="Observaciones internas o motivo del rechazo"
+                    ></textarea>
+                  </label>
+
+                  <div class="decision-actions">
+                    <button id="reject-button" class="danger-button" type="button">
+                      Rechazar solicitud
+                    </button>
+                    <button id="approve-button" class="primary-button" type="button">
+                      Aprobar identidad
+                    </button>
+                  </div>
+
+                  <p id="action-feedback" class="action-feedback hidden"></p>
+                </section>
+              </article>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+  </html>

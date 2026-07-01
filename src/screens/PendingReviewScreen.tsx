@@ -10,10 +10,12 @@ import {
 import { GlassPanel } from '../components/GlassPanel';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
+import { useLocale } from '../providers/LocaleProvider';
 import { useSession } from '../providers/SessionProvider';
-import { colors, safetyTips, spacing } from '../theme/tokens';
+import { colors, spacing } from '../theme/tokens';
 
 export function PendingReviewScreen() {
+  const { copy } = useLocale();
   const { debugApproveProfile, isMockMode, profile, signOut } = useSession();
 
   return (
@@ -22,12 +24,13 @@ export function PendingReviewScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <Text style={styles.kicker}>Estado de cuenta</Text>
-          <Text style={styles.title}>Tu identidad ya entro a revision.</Text>
-          <Text style={styles.copy}>
-            Mientras se valida tu informacion, Hive mantiene bloqueadas las funciones sociales y
-            de eventos.
-          </Text>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroCopyBlock}>
+              <Text style={styles.kicker}>{copy.pending.kicker}</Text>
+              <Text style={styles.title}>{copy.pending.title}</Text>
+            </View>
+          </View>
+          <Text style={styles.copy}>{copy.pending.copy}</Text>
         </View>
 
         <GlassPanel>
@@ -36,30 +39,36 @@ export function PendingReviewScreen() {
               <Feather color={colors.primaryDeep} name="shield" size={22} />
             </View>
             <View style={styles.statusCopy}>
-              <Text style={styles.statusTitle}>En revision</Text>
-              <Text style={styles.statusText}>Perfil visible solo para el equipo de validacion.</Text>
+              <Text style={styles.statusTitle}>{copy.pending.status}</Text>
+              <Text style={styles.statusText}>{copy.pending.reviewOnly}</Text>
             </View>
           </View>
 
           <View style={styles.identityCard}>
-            <Text style={styles.identityLabel}>Nombre</Text>
-            <Text style={styles.identityValue}>{profile?.fullName || 'Pendiente'}</Text>
+            <Text style={styles.identityLabel}>{copy.pending.identityTitle}</Text>
+            <Text style={styles.identityValue}>{profile?.fullName || copy.common.pending}</Text>
             <Text style={styles.identityLabel}>RUT</Text>
-            <Text style={styles.identityValue}>{profile?.rut || 'Pendiente'}</Text>
+            <Text style={styles.identityValue}>{profile?.rut || copy.common.pending}</Text>
           </View>
 
           <View style={styles.timeline}>
-            <Text style={styles.timelineTitle}>Que sigue ahora</Text>
-            <Text style={styles.timelineText}>1. Revisa tu documentacion el equipo de Hive.</Text>
-            <Text style={styles.timelineText}>2. Si todo coincide, activamos `verificado = true`.</Text>
-            <Text style={styles.timelineText}>3. Se desbloquean home, eventos, grupos y notificaciones.</Text>
+            <Text style={styles.timelineTitle}>{copy.pending.timelineTitle}</Text>
+            {copy.pending.timeline.map((step) => (
+              <Text key={step} style={styles.timelineText}>
+                {step}
+              </Text>
+            ))}
           </View>
 
-          <PrimaryButton label="Cerrar sesion" onPress={() => void signOut()} variant="secondary" />
+          <PrimaryButton
+            label={copy.common.closeSession}
+            onPress={() => void signOut()}
+            variant="secondary"
+          />
 
           {isMockMode ? (
             <PrimaryButton
-              label="Aprobar en demo"
+              label={copy.pending.demoApprove}
               onPress={() => void debugApproveProfile()}
               style={styles.demoButton}
             />
@@ -67,9 +76,9 @@ export function PendingReviewScreen() {
         </GlassPanel>
 
         <GlassPanel>
-          <Text style={styles.tipTitle}>Tips de seguridad</Text>
+          <Text style={styles.tipTitle}>{copy.pending.safetyTipsTitle}</Text>
           <View style={styles.tipList}>
-            {safetyTips.map((tip) => (
+            {copy.pending.safetyTips.map((tip) => (
               <View key={tip} style={styles.tipRow}>
                 <View style={styles.tipDot} />
                 <Text style={styles.tipText}>{tip}</Text>
@@ -90,6 +99,16 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   hero: {
+    gap: spacing.sm,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  heroCopyBlock: {
+    flex: 1,
     gap: spacing.sm,
   },
   kicker: {

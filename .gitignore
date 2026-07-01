@@ -42,3 +42,6 @@ yarn-error.*
 
 # nested repo helper folder
 /Hive/
+
+# supabase cli temp metadata
+/supabase/.temp/

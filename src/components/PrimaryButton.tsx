@@ -8,7 +8,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radii, shadows, spacing } from '../theme/tokens';
+import { useAppTheme } from '../providers/ThemeProvider';
+import { radii, shadows, spacing } from '../theme/tokens';
 
 interface PrimaryButtonProps {
   label: string;
@@ -25,6 +26,8 @@ export function PrimaryButton({
   disabled = false,
   style,
 }: PrimaryButtonProps) {
+  const { theme } = useAppTheme();
+
   return (
     <Pressable
       disabled={disabled}
@@ -38,25 +41,33 @@ export function PrimaryButton({
     >
       {variant === 'primary' ? (
         <LinearGradient
-          colors={[colors.primary, '#FF7B72', colors.primaryDeep]}
+          colors={theme.primaryGradient}
           end={{ x: 1, y: 0 }}
           start={{ x: 0, y: 1 }}
           style={[styles.gradientButton, disabled && styles.buttonDisabled]}
         >
-          <Text style={styles.primaryLabel}>{label}</Text>
+          <Text style={[styles.primaryLabel, { color: theme.colors.white }]}>{label}</Text>
         </LinearGradient>
       ) : (
         <View
           style={[
             styles.flatButton,
-            variant === 'secondary' ? styles.secondaryButton : styles.ghostButton,
+            variant === 'secondary'
+              ? [
+                  styles.secondaryButton,
+                  {
+                    backgroundColor: theme.colors.surfaceStrong,
+                    borderColor: theme.colors.ghostBorder,
+                  },
+                ]
+              : [styles.ghostButton, { borderColor: theme.colors.ghostBorder }],
             disabled && styles.buttonDisabled,
           ]}
         >
           <Text
             style={[
               styles.secondaryLabel,
-              variant === 'ghost' ? styles.ghostLabel : undefined,
+              { color: variant === 'ghost' ? theme.colors.primaryDeep : theme.colors.text },
             ]}
           >
             {label}
@@ -87,29 +98,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.84)',
     borderWidth: 1,
-    borderColor: colors.ghostBorder,
   },
   ghostButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.ghostBorder,
   },
   primaryLabel: {
     fontFamily: 'PlusJakartaSans_700Bold',
     fontSize: 14,
     letterSpacing: 2.2,
     textTransform: 'uppercase',
-    color: colors.white,
   },
   secondaryLabel: {
     fontFamily: 'PlusJakartaSans_600SemiBold',
     fontSize: 14,
-    color: colors.text,
-  },
-  ghostLabel: {
-    color: colors.primaryDeep,
   },
   buttonPressed: {
     opacity: 0.96,

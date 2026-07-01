@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,13 +16,16 @@ import {
 import { GlassPanel } from '../components/GlassPanel';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
+import { SocialProviderPreview } from '../components/SocialProviderPreview';
 import { TextField } from '../components/TextField';
+import { useLocale } from '../providers/LocaleProvider';
 import { useSession } from '../providers/SessionProvider';
 import { colors, spacing } from '../theme/tokens';
 
 type AuthMode = 'signIn' | 'signUp';
 
 export function AuthScreen() {
+  const { copy } = useLocale();
   const { isMockMode, signIn, signUp } = useSession();
 
   const [mode, setMode] = useState<AuthMode>('signIn');
@@ -29,6 +33,38 @@ export function AuthScreen() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [switchWidth, setSwitchWidth] = useState(0);
+
+  const modeProgress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(modeProgress, {
+      toValue: mode === 'signIn' ? 0 : 1,
+      useNativeDriver: true,
+      damping: 18,
+      mass: 0.9,
+      stiffness: 170,
+    }).start();
+  }, [mode, modeProgress]);
+
+  const indicatorWidth = switchWidth > 16 ? (switchWidth - 16) / 2 : 0;
+  const indicatorTranslateX = modeProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, switchWidth / 2],
+  });
+
+  const contentOpacity = modeProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0.82, 1],
+  });
+  const contentTranslateY = modeProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 6, 0],
+  });
+  const contentScale = modeProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0.992, 1],
+  });
 
   const handleSubmit = async () => {
     try {
@@ -44,18 +80,20 @@ export function AuthScreen() {
       setError(
         submissionError instanceof Error
           ? submissionError.message
-          : 'No se pudo completar la autenticacion.',
+          : copy.auth.submitErrorFallback,
       );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const openSocialPlaceholder = (provider: string) => {
-    Alert.alert(
-      'Social connect',
-      `${provider} quedo reservado para la siguiente iteracion de Supabase Auth.`,
-    );
+  const handleModeChange = (nextMode: AuthMode) => {
+    if (nextMode === mode) {
+      return;
+    }
+
+    setError(null);
+    setMode(nextMode);
   };
 
   return (
@@ -73,113 +111,129 @@ export function AuthScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.heroBlock}>
-            <Text style={styles.brand}>HIVE</Text>
-            <Text style={styles.heroTitle}>Una comunidad deportiva que primero protege.</Text>
-            <Text style={styles.heroCopy}>
-              Mujeres verificadas, eventos claros y una identidad comun respaldada desde el
-              primer acceso.
-            </Text>
+            <View style={styles.heroTopRow}>
+              <Text style={styles.brand}>HIVE</Text>
+            </View>
+            <Text style={styles.heroTitle}>{copy.auth.heroTitle}</Text>
+            <Text style={styles.heroCopy}>{copy.auth.heroCopy}</Text>
           </View>
 
           <GlassPanel style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardBrand}>HIVE</Text>
               <Text style={styles.cardTitle}>
-                {mode === 'signIn' ? 'Welcome back' : 'Join the hive'}
+                {mode === 'signIn' ? copy.auth.cardTitleSignIn : copy.auth.cardTitleSignUp}
               </Text>
             </View>
 
-            <View style={styles.modeSwitch}>
+            <View
+              onLayout={(event) => setSwitchWidth(event.nativeEvent.layout.width)}
+              style={styles.modeSwitch}
+            >
+              {indicatorWidth > 0 ? (
+                <Animated.View
+                  style={[
+                    styles.modeIndicator,
+                    {
+                      transform: [{ translateX: indicatorTranslateX }],
+                      width: indicatorWidth,
+                    },
+                  ]}
+                />
+              ) : null}
               <Pressable
-                onPress={() => setMode('signIn')}
-                style={[styles.modePill, mode === 'signIn' ? styles.modePillActive : undefined]}
+                onPress={() => handleModeChange('signIn')}
+                style={styles.modePill}
               >
                 <Text
                   style={[styles.modeLabel, mode === 'signIn' ? styles.modeLabelActive : undefined]}
                 >
-                  Entrar
+                  {copy.common.signIn}
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => setMode('signUp')}
-                style={[styles.modePill, mode === 'signUp' ? styles.modePillActive : undefined]}
+                onPress={() => handleModeChange('signUp')}
+                style={styles.modePill}
               >
                 <Text
                   style={[styles.modeLabel, mode === 'signUp' ? styles.modeLabelActive : undefined]}
                 >
-                  Crear cuenta
+                  {copy.common.createAccount}
                 </Text>
               </Pressable>
             </View>
 
-            <View style={styles.form}>
-              <TextField
-                autoCapitalize="none"
-                keyboardType="email-address"
-                label="Email address"
-                onChangeText={setEmail}
-                placeholder="jane.doe@hive.cl"
-                value={email}
-              />
-              <TextField
-                autoCapitalize="none"
-                error={error}
-                label="Password"
-                onChangeText={setPassword}
-                onRightActionPress={() =>
-                  Alert.alert('Reset pendiente', 'Se conectara con recovery via Supabase.')
+            <Animated.View
+              style={[
+                styles.animatedContent,
+                {
+                  opacity: contentOpacity,
+                  transform: [{ translateY: contentTranslateY }, { scale: contentScale }],
+                },
+              ]}
+            >
+              <View style={styles.form}>
+                <TextField
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  label={copy.common.emailLabel}
+                  onChangeText={setEmail}
+                  placeholder={copy.common.emailPlaceholder}
+                  value={email}
+                />
+                <TextField
+                  autoCapitalize="none"
+                  error={error}
+                  label={copy.common.passwordLabel}
+                  onChangeText={setPassword}
+                  onRightActionPress={() =>
+                    Alert.alert(copy.auth.resetPendingTitle, copy.auth.resetPendingBody)
+                  }
+                  placeholder={copy.common.passwordPlaceholder}
+                  rightActionLabel={mode === 'signIn' ? copy.common.forgotPassword : undefined}
+                  secureTextEntry
+                  value={password}
+                />
+              </View>
+
+              <PrimaryButton
+                disabled={submitting}
+                label={
+                  submitting
+                    ? copy.common.processing
+                    : mode === 'signIn'
+                      ? copy.common.signIn
+                      : copy.common.createAccount
                 }
-                placeholder="Minimo 6 caracteres"
-                rightActionLabel={mode === 'signIn' ? 'Forgot?' : undefined}
-                secureTextEntry
-                value={password}
+                onPress={handleSubmit}
+                style={styles.submitButton}
               />
-            </View>
 
-            <PrimaryButton
-              disabled={submitting}
-              label={submitting ? 'Procesando' : mode === 'signIn' ? 'Sign In' : 'Crear cuenta'}
-              onPress={handleSubmit}
-              style={styles.submitButton}
-            />
+              <View style={styles.safeTag}>
+                <Feather color={colors.primaryDeep} name="shield" size={14} />
+                <Text style={styles.safeTagText}>
+                  {mode === 'signIn'
+                    ? copy.auth.safeTagSignIn
+                    : copy.auth.safeTagSignUp}
+                </Text>
+              </View>
 
-            <View style={styles.safeTag}>
-              <Feather color={colors.primaryDeep} name="shield" size={14} />
-              <Text style={styles.safeTagText}>Solo mujeres verificadas entran al ecosistema.</Text>
-            </View>
+              {mode === 'signUp' ? (
+                <View style={styles.registrationHint}>
+                  <Text style={styles.registrationHintTitle}>{copy.auth.registrationHintTitle}</Text>
+                  {copy.auth.registrationSteps.map((step) => (
+                    <Text key={step} style={styles.registrationHintCopy}>
+                      {step}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </Animated.View>
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Social connect</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <View style={styles.socialRow}>
-              <Pressable onPress={() => openSocialPlaceholder('Google')} style={styles.socialButton}>
-                <Feather color={colors.text} name="globe" size={16} />
-                <Text style={styles.socialLabel}>Google</Text>
-              </Pressable>
-              <Pressable onPress={() => openSocialPlaceholder('Apple')} style={styles.socialButton}>
-                <Feather color={colors.text} name="smartphone" size={16} />
-                <Text style={styles.socialLabel}>Apple</Text>
-              </Pressable>
-            </View>
-
-            <Text style={styles.footerCopy}>
-              {mode === 'signIn' ? 'Nueva en Hive?' : 'Ya tienes cuenta?'}{' '}
-              <Text
-                onPress={() => setMode(mode === 'signIn' ? 'signUp' : 'signIn')}
-                style={styles.footerAccent}
-              >
-                {mode === 'signIn' ? 'Unete hoy' : 'Inicia sesion'}
-              </Text>
-            </Text>
+            <SocialProviderPreview />
 
             {isMockMode ? (
-              <Text style={styles.mockModeCopy}>
-                Modo demo activo: si aun no defines las llaves de Supabase, cualquier email y
-                password te dejaran avanzar al flujo.
-              </Text>
+              <Text style={styles.mockModeCopy}>{copy.auth.demoModeCopy}</Text>
             ) : null}
           </GlassPanel>
         </ScrollView>
@@ -203,6 +257,12 @@ const styles = StyleSheet.create({
   heroBlock: {
     gap: spacing.sm,
     paddingTop: spacing.xl,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
   brand: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',
@@ -246,6 +306,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   modeSwitch: {
+    position: 'relative',
     flexDirection: 'row',
     gap: spacing.xs,
     padding: 4,
@@ -253,15 +314,21 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.54)',
   },
+  modeIndicator: {
+    position: 'absolute',
+    top: 4,
+    bottom: 4,
+    left: 4,
+    borderRadius: 999,
+    backgroundColor: colors.white,
+  },
   modePill: {
+    zIndex: 1,
     flex: 1,
     minHeight: 42,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  modePillActive: {
-    backgroundColor: colors.white,
   },
   modeLabel: {
     fontFamily: 'PlusJakartaSans_600SemiBold',
@@ -270,6 +337,9 @@ const styles = StyleSheet.create({
   },
   modeLabelActive: {
     color: colors.text,
+  },
+  animatedContent: {
+    gap: spacing.md,
   },
   form: {
     gap: spacing.md,
@@ -293,58 +363,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primaryDeep,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginVertical: spacing.xl,
+  registrationHint: {
+    gap: spacing.xxs,
+    marginTop: spacing.lg,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.56)',
+    padding: spacing.lg,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(77, 33, 42, 0.08)',
-  },
-  dividerText: {
+  registrationHintTitle: {
     fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 10,
-    letterSpacing: 2.1,
-    color: colors.textSoft,
-    textTransform: 'uppercase',
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  socialButton: {
-    flex: 1,
-    minHeight: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.76)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.44)',
-  },
-  socialLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 13,
+    fontSize: 15,
     color: colors.text,
   },
-  footerCopy: {
-    marginTop: spacing.xl,
-    textAlign: 'center',
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+  registrationHintCopy: {
+    fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 13,
+    lineHeight: 20,
     color: colors.textMuted,
   },
-  footerAccent: {
-    color: colors.primary,
-    fontFamily: 'PlusJakartaSans_700Bold',
-  },
   mockModeCopy: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     textAlign: 'center',
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 12,

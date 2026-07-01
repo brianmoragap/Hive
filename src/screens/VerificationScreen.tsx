@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import { GlassPanel } from '../components/GlassPanel';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
 import { TextField } from '../components/TextField';
+import { useLocale } from '../providers/LocaleProvider';
 import { useSession } from '../providers/SessionProvider';
 import { colors, spacing } from '../theme/tokens';
 import { formatRut, isValidRut } from '../utils/rut';
@@ -21,6 +23,7 @@ import { formatRut, isValidRut } from '../utils/rut';
 type UploadTarget = 'front' | 'serial';
 
 export function VerificationScreen() {
+  const { copy } = useLocale();
   const { isMockMode, profile, signOut, submitVerification } = useSession();
 
   const [fullName, setFullName] = useState(profile?.fullName ?? '');
@@ -57,7 +60,7 @@ export function VerificationScreen() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissions.granted) {
-      Alert.alert('Permiso requerido', 'Necesitamos acceso para capturar o seleccionar la imagen.');
+      Alert.alert(copy.verification.permissionTitle, copy.verification.permissionBody);
       return;
     }
 
@@ -65,13 +68,25 @@ export function VerificationScreen() {
       source === 'camera'
         ? await ImagePicker.launchCameraAsync({
             allowsEditing: false,
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 0.85,
+            mediaTypes: ['images'],
+            presentationStyle:
+              Platform.OS === 'ios'
+                ? ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN
+                : undefined,
+            quality: 0.9,
           })
         : await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: false,
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 0.85,
+            allowsEditing: Platform.OS === 'ios',
+            mediaTypes: ['images'],
+            preferredAssetRepresentationMode:
+              Platform.OS === 'ios'
+                ? ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current
+                : undefined,
+            presentationStyle:
+              Platform.OS === 'ios'
+                ? ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN
+                : undefined,
+            quality: 0.9,
           });
 
     if (pickerResult.canceled) {
@@ -82,37 +97,37 @@ export function VerificationScreen() {
   };
 
   const selectDocument = (target: UploadTarget) => {
-    Alert.alert('Documento de identidad', 'Elige como quieres cargar la imagen.', [
+    Alert.alert(copy.verification.pickerTitle, copy.verification.pickerBody, [
       {
-        text: 'Camara',
+        text: copy.verification.cameraOption,
         onPress: () => void launchPicker(target, 'camera'),
       },
       {
-        text: 'Biblioteca',
+        text: copy.verification.libraryOption,
         onPress: () => void launchPicker(target, 'library'),
       },
       {
         style: 'cancel',
-        text: 'Cancelar',
+        text: copy.common.cancel,
       },
     ]);
   };
 
-  const rutError = rut.length > 0 && !isValidRut(rut) ? 'Revisa el digito verificador.' : null;
+  const rutError = rut.length > 0 && !isValidRut(rut) ? copy.verification.invalidRut : null;
 
   const handleSubmit = async () => {
     if (!frontUri || !serialUri) {
-      setError('Debes subir ambas imagenes de la cedula.');
+      setError(copy.verification.missingDocuments);
       return;
     }
 
     if (!fullName.trim()) {
-      setError('Ingresa tu nombre completo.');
+      setError(copy.verification.missingFullName);
       return;
     }
 
     if (!isValidRut(rut)) {
-      setError('Ingresa un RUT chileno valido.');
+      setError(copy.verification.invalidRut);
       return;
     }
 
@@ -130,7 +145,7 @@ export function VerificationScreen() {
       setError(
         submissionError instanceof Error
           ? submissionError.message
-          : 'No fue posible enviar la verificacion.',
+          : copy.verification.reviewErrorFallback,
       );
     } finally {
       setSubmitting(false);
@@ -146,47 +161,50 @@ export function VerificationScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text style={styles.kicker}>Paso 2 · Verificacion</Text>
-          <Text style={styles.title}>La seguridad de Hive parte por validar identidad real.</Text>
-          <Text style={styles.copy}>
-            Antes de ver salidas y grupos, necesitamos confirmar tu perfil con nombre, RUT y
-            fotos claras de tu cedula chilena.
-          </Text>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroCopyBlock}>
+              <Text style={styles.kicker}>{copy.verification.kicker}</Text>
+              <Text style={styles.title}>{copy.verification.title}</Text>
+            </View>
+          </View>
+          <Text style={styles.copy}>{copy.verification.copy}</Text>
         </View>
 
         <View style={styles.stepRow}>
           <View style={[styles.stepChip, styles.stepChipActive]}>
-            <Text style={[styles.stepChipText, styles.stepChipTextActive]}>Cuenta</Text>
+            <Text style={[styles.stepChipText, styles.stepChipTextActive]}>
+              {copy.common.account}
+            </Text>
           </View>
           <View style={[styles.stepChip, styles.stepChipActive]}>
-            <Text style={[styles.stepChipText, styles.stepChipTextActive]}>Identidad</Text>
+            <Text style={[styles.stepChipText, styles.stepChipTextActive]}>
+              {copy.common.identity}
+            </Text>
           </View>
           <View style={styles.stepChip}>
-            <Text style={styles.stepChipText}>Revision</Text>
+            <Text style={styles.stepChipText}>{copy.common.review}</Text>
           </View>
         </View>
 
         <GlassPanel>
           <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>Perfil seguro</Text>
-            <Text style={styles.panelCopy}>
-              Este perfil se marca en revision hasta que una moderadora lo apruebe.
-            </Text>
+            <Text style={styles.panelTitle}>{copy.verification.panelTitle}</Text>
+            <Text style={styles.panelCopy}>{copy.verification.panelCopy}</Text>
           </View>
 
           <View style={styles.form}>
             <TextField
               autoCapitalize="words"
-              label="Nombre completo"
+              label={copy.common.fullName}
               onChangeText={setFullName}
-              placeholder="Como aparece en tu cedula"
+              placeholder={copy.verification.secureProfile}
               value={fullName}
             />
             <TextField
               autoCapitalize="characters"
               error={rutError}
               keyboardType="default"
-              label="RUT chileno"
+              label={copy.verification.rutLabel}
               onChangeText={(value) => setRut(formatRut(value))}
               placeholder="12.345.678-5"
               value={rut}
@@ -195,44 +213,45 @@ export function VerificationScreen() {
 
           <View style={styles.uploadSection}>
             <DocumentUploadCard
-              description="Captura el frente de tu documento con todos los datos visibles."
+              description={copy.verification.uploadFrontDescription}
               imageUri={frontUri}
               onPress={() => selectDocument('front')}
-              title="Foto frontal de cedula"
+              title={copy.verification.uploadFrontTitle}
             />
             <DocumentUploadCard
-              description="Sube la cara posterior o encuadre donde se lea el numero de serie."
+              description={copy.verification.serialDescription}
               imageUri={serialUri}
               onPress={() => selectDocument('serial')}
-              title="Numero de serie"
+              title={copy.verification.serialTitle}
             />
           </View>
 
           {error ? <Text style={styles.errorCopy}>{error}</Text> : null}
 
           <View style={styles.noticeCard}>
-            <Text style={styles.noticeTitle}>Como funciona la revision</Text>
-            <Text style={styles.noticeCopy}>
-              Guardamos las imagenes en Supabase Storage y tu perfil queda con `verificado =
-              false` hasta la aprobacion manual.
-            </Text>
+            <Text style={styles.noticeTitle}>{copy.verification.noticeTitle}</Text>
+            <Text style={styles.noticeCopy}>{copy.verification.noticeCopy}</Text>
           </View>
 
           <PrimaryButton
             disabled={
               submitting || !fullName.trim() || !isValidRut(rut) || !frontUri || !serialUri
             }
-            label={submitting ? 'Enviando' : 'Enviar a revision'}
+            label={submitting ? copy.verification.reviewSending : copy.verification.reviewCta}
             onPress={handleSubmit}
             style={styles.cta}
           />
 
-          <PrimaryButton label="Cerrar sesion" onPress={() => void signOut()} variant="ghost" />
+          <PrimaryButton
+            label={copy.common.closeSession}
+            onPress={() => void signOut()}
+            variant="ghost"
+          />
 
           <Text style={styles.helperCopy}>
             {isMockMode
-              ? 'Estas viendo el flujo en modo demo. Cuando agregues las llaves de Supabase, las imagenes subiran al bucket privado.'
-              : 'Con las llaves de Supabase activas, este flujo ya queda listo para autenticar y enviar documentos a revision.'}
+              ? copy.verification.helperMock
+              : copy.verification.helperLive}
           </Text>
         </GlassPanel>
       </ScrollView>
@@ -250,6 +269,16 @@ const styles = StyleSheet.create({
   hero: {
     gap: spacing.sm,
     paddingTop: spacing.xs,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  heroCopyBlock: {
+    flex: 1,
+    gap: spacing.sm,
   },
   kicker: {
     fontFamily: 'PlusJakartaSans_700Bold',

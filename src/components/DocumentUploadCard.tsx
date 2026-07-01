@@ -7,7 +7,9 @@ import {
   View,
 } from 'react-native';
 
-import { colors, radii, spacing } from '../theme/tokens';
+import { useLocale } from '../providers/LocaleProvider';
+import { useAppTheme } from '../providers/ThemeProvider';
+import { radii, spacing } from '../theme/tokens';
 
 interface DocumentUploadCardProps {
   title: string;
@@ -22,24 +24,40 @@ export function DocumentUploadCard({
   imageUri,
   onPress,
 }: DocumentUploadCardProps) {
+  const { copy } = useLocale();
+  const { theme } = useAppTheme();
+
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: theme.colors.surfaceStrong },
+        pressed && styles.cardPressed,
+      ]}
+    >
       <View style={styles.copyColumn}>
-        <View style={styles.iconBadge}>
-          <Feather color={colors.primaryDeep} name={imageUri ? 'check' : 'camera'} size={16} />
+        <View style={[styles.iconBadge, { backgroundColor: theme.colors.primarySoft }]}>
+          <Feather
+            color={theme.colors.primaryDeep}
+            name={imageUri ? 'check' : 'camera'}
+            size={16}
+          />
         </View>
         <View style={styles.textColumn}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
-          <Text style={styles.meta}>{imageUri ? 'Documento listo para revision' : 'Subir archivo'}</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+          <Text style={[styles.description, { color: theme.colors.textMuted }]}>{description}</Text>
+          <Text style={[styles.meta, { color: theme.colors.primaryDeep }]}>
+            {imageUri ? copy.common.uploadReady : copy.common.uploadDocument}
+          </Text>
         </View>
       </View>
 
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={styles.preview} />
       ) : (
-        <View style={styles.placeholder}>
-          <Feather color={colors.textSoft} name="upload-cloud" size={18} />
+        <View style={[styles.placeholder, { backgroundColor: theme.colors.surfaceMuted }]}>
+          <Feather color={theme.colors.textSoft} name="upload-cloud" size={18} />
         </View>
       )}
     </Pressable>
@@ -53,7 +71,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
     borderRadius: radii.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     padding: spacing.md,
   },
   cardPressed: {
@@ -70,7 +87,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.pill,
-    backgroundColor: colors.primarySoft,
   },
   textColumn: {
     flex: 1,
@@ -79,18 +95,15 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'PlusJakartaSans_700Bold',
     fontSize: 14,
-    color: colors.text,
   },
   description: {
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 12,
     lineHeight: 18,
-    color: colors.textMuted,
   },
   meta: {
     fontFamily: 'PlusJakartaSans_600SemiBold',
     fontSize: 11,
-    color: colors.primaryDeep,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
   },
@@ -105,6 +118,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.66)',
   },
 });

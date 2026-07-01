@@ -7,13 +7,15 @@ import {
   type KeyboardTypeOptions,
 } from 'react-native';
 
-import { colors, radii, spacing } from '../theme/tokens';
+import { useAppTheme } from '../providers/ThemeProvider';
+import { radii, spacing } from '../theme/tokens';
 
 interface TextFieldProps {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
+  maxLength?: number;
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
@@ -27,6 +29,7 @@ export function TextField({
   value,
   onChangeText,
   placeholder,
+  maxLength,
   secureTextEntry = false,
   keyboardType = 'default',
   autoCapitalize = 'none',
@@ -34,32 +37,43 @@ export function TextField({
   onRightActionPress,
   error,
 }: TextFieldProps) {
+  const { theme } = useAppTheme();
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: theme.colors.textSoft }]}>{label}</Text>
         {rightActionLabel ? (
           <Pressable onPress={onRightActionPress}>
-            <Text style={styles.actionText}>{rightActionLabel}</Text>
+            <Text style={[styles.actionText, { color: theme.colors.primary }]}>
+              {rightActionLabel}
+            </Text>
           </Pressable>
         ) : null}
       </View>
 
-      <View style={[styles.inputShell, error ? styles.inputShellError : undefined]}>
+      <View
+        style={[
+          styles.inputShell,
+          { backgroundColor: theme.colors.inputBackground },
+          error ? [styles.inputShellError, { borderColor: theme.colors.danger }] : undefined,
+        ]}
+      >
         <TextInput
           autoCapitalize={autoCapitalize}
           keyboardType={keyboardType}
+          maxLength={maxLength}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="rgba(125, 90, 98, 0.55)"
+          placeholderTextColor={theme.colors.inputPlaceholder}
           secureTextEntry={secureTextEntry}
-          selectionColor={colors.primary}
-          style={styles.input}
+          selectionColor={theme.colors.primary}
+          style={[styles.input, { color: theme.colors.text }]}
           value={value}
         />
       </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={[styles.errorText, { color: theme.colors.danger }]}>{error}</Text> : null}
     </View>
   );
 }
@@ -78,14 +92,12 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_700Bold',
     fontSize: 10,
     letterSpacing: 2.1,
-    color: 'rgba(77, 33, 42, 0.62)',
     textTransform: 'uppercase',
   },
   actionText: {
     fontFamily: 'PlusJakartaSans_700Bold',
     fontSize: 10,
     letterSpacing: 1.4,
-    color: colors.primary,
     textTransform: 'uppercase',
   },
   inputShell: {
@@ -97,17 +109,14 @@ const styles = StyleSheet.create({
   },
   inputShellError: {
     borderWidth: 1,
-    borderColor: 'rgba(192, 57, 90, 0.28)',
   },
   input: {
     fontFamily: 'PlusJakartaSans_600SemiBold',
     fontSize: 15,
-    color: colors.text,
   },
   errorText: {
     paddingHorizontal: spacing.sm,
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 12,
-    color: colors.danger,
   },
 });

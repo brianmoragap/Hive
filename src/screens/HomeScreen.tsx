@@ -1,204 +1,676 @@
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
+  Easing,
+  ImageBackground,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { GlassPanel } from '../components/GlassPanel';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { AccountMenuSheet } from '../components/AccountMenuSheet';
+import { AppFooterTabs, APP_FOOTER_HEIGHT } from '../components/AppFooterTabs';
+import { AppHeader } from '../components/AppHeader';
+import { EventFeedCard } from '../components/EventFeedCard';
 import { ScreenFrame } from '../components/ScreenFrame';
-import { SportTile } from '../components/SportTile';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useEvents } from '../providers/EventsProvider';
+import { useLocale } from '../providers/LocaleProvider';
+import { useAppTheme } from '../providers/ThemeProvider';
 import { useSession } from '../providers/SessionProvider';
-import { colors, sampleEvents, spacing, sportOptions } from '../theme/tokens';
+import {
+  colors,
+  homeSpotlightImage,
+  sportHeroImages,
+  radii,
+  shadows,
+  spacing,
+} from '../theme/tokens';
+import { withAlpha } from '../theme/appTheme';
+import type { AppTab, EventRecord, SportOption } from '../types/domain';
+import { handleAppTabPress } from '../utils/appNavigation';
+import { eventMatchesSearch, formatNotificationLine } from '../utils/events';
+
+type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
+const FOOTER_HEIGHT = 88;
+
+function getHeroGradient(
+  selectedSportId: SportOption['id'],
+  theme: ReturnType<typeof useAppTheme>['theme'],
+): [string, string, string] {
+  if (selectedSportId === 'mtb') {
+    return [withAlpha(theme.colors.peach, 'F0'), withAlpha(theme.colors.primary, 'D4'), withAlpha(theme.colors.primaryDeep, '94')];
+  }
+
+  if (selectedSportId === 'trekking') {
+    return [withAlpha(theme.colors.mint, 'EE'), withAlpha(theme.colors.primary, 'CF'), withAlpha(theme.colors.primaryDeep, '90')];
+  }
+
+  if (selectedSportId === 'trail_running') {
+    return [withAlpha(theme.colors.lilac, 'EB'), withAlpha(theme.colors.primary, 'CC'), withAlpha(theme.colors.primaryDeep, '8A')];
+  }
+
+  if (selectedSportId === 'road_cycling') {
+    return [withAlpha(theme.colors.peach, 'EE'), withAlpha(theme.colors.primary, 'D8'), withAlpha(theme.colors.primaryDeep, '96')];
+  }
+
+  return [withAlpha(theme.colors.primary, 'DE'), withAlpha(theme.colors.primaryDeep, 'CC'), withAlpha(theme.colors.primaryDeep, '82')];
+}
 
 export function HomeScreen() {
-  const { profile, signOut } = useSession();
-  const firstName = profile?.fullName.split(' ')[0] || 'Hive';
+  const { copy } = useLocale();
+  const { theme } = useAppTheme();
+  const { signOut } = useSession();
+  const {
+    markAllNotificationsRead,
+    notifications,
+    unreadNotifications,
+    visibleEvents,
+  } = useEvents();
+  const navigation = useNavigation<RootNavigation>();
+  const insets = useSafeAreaInsets();
+  const entranceAnims = useRef(
+    Array.from({ length: 6 }, () => new Animated.Value(0)),
+  ).current;
+  const focusAnim = useRef(new Animated.Value(1)).current;
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSportId, setSelectedSportId] = useState<SportOption['id']>('running');
+
+  const selectedSport = useMemo(
+    () =>
+      copy.home.sportOptions.find((sport) => sport.id === selectedSportId) ||
+      copy.home.sportOptions[0],
+    [copy.home.sportOptions, selectedSportId],
+  );
+  const secondarySports = useMemo(
+    () => copy.home.sportOptions.filter((sport) => sport.id !== selectedSport.id),
+    [copy.home.sportOptions, selectedSport.id],
+  );
+  const filteredEvents = useMemo(
+    () =>
+      visibleEvents.filter(
+        (event) =>
+          event.status === 'scheduled' &&
+          event.sport === selectedSport.id &&
+          eventMatchesSearch(event, searchQuery),
+      ),
+    [searchQuery, selectedSport.id, visibleEvents],
+  );
+  const featureGradient = useMemo(
+    () => getHeroGradient(selectedSport.id, theme),
+    [selectedSport.id, theme],
+  );
+
+  useEffect(() => {
+    Animated.stagger(
+      85,
+      entranceAnims.map((anim) =>
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 560,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ),
+    ).start();
+  }, [entranceAnims]);
+
+  const openNotifications = () => {
+    markAllNotificationsRead();
+    const body = notifications.length
+      ? notifications
+          .slice(0, 4)
+          .map((notification) => `• ${formatNotificationLine(copy, notification)}`)
+          .join('\n')
+      : copy.home.notificationsEmpty;
+
+    Alert.alert(copy.home.notificationsTitle, body);
+  };
+
+  const openCreateEvent = () => {
+    navigation.navigate('CreateEvent', { prefillSport: selectedSport.id });
+  };
+
+  const openEventDetail = (event: EventRecord) => {
+    navigation.navigate('EventDetail', { eventId: event.id });
+  };
+
+  const handleSportSelection = (nextSport: SportOption) => {
+    if (nextSport.id === selectedSport.id) {
+      return;
+    }
+
+    Animated.timing(focusAnim, {
+      toValue: 0,
+      duration: 180,
+      easing: Easing.inOut(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (!finished) {
+        return;
+      }
+
+      setSelectedSportId(nextSport.id);
+
+      requestAnimationFrame(() => {
+        Animated.spring(focusAnim, {
+          damping: 16,
+          mass: 0.9,
+          stiffness: 180,
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
+      });
+    });
+  };
+
+  const getEntranceStyle = (index: number, offsetY: number) => ({
+    opacity: entranceAnims[index],
+    transform: [
+      {
+        translateY: entranceAnims[index].interpolate({
+          inputRange: [0, 1],
+          outputRange: [offsetY, 0],
+        }),
+      },
+    ],
+  });
+
+  const focusCardStyle = {
+    opacity: focusAnim,
+    transform: [
+      {
+        translateY: focusAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [18, 0],
+        }),
+      },
+      {
+        scale: focusAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.98, 1],
+        }),
+      },
+    ],
+  };
 
   return (
-    <ScreenFrame>
-      <StatusBar style="dark" />
+    <ScreenFrame contentStyle={styles.safeArea}>
+      <StatusBar style={theme.statusBarStyle} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.kicker}>Cuenta verificada</Text>
-            <Text style={styles.title}>Hola, {firstName}</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Feather color={colors.success} name="check-circle" size={16} />
-            <Text style={styles.verifiedLabel}>Verificada</Text>
-          </View>
-        </View>
-
-        <GlassPanel>
-          <Text style={styles.heroTitle}>Tu siguiente salida empieza por el deporte.</Text>
-          <Text style={styles.heroCopy}>
-            Esta primera version deja listo el home para abrir el listado de eventos por
-            disciplina en la siguiente iteracion.
-          </Text>
-          <PrimaryButton
-            label="Crear salida"
-            onPress={() => Alert.alert('Proximo paso', 'La creacion de eventos sigue en la fase 2.')}
-            style={styles.heroButton}
+      <View style={styles.container}>
+        <Animated.View style={getEntranceStyle(0, -18)}>
+          <AppHeader
+            notificationCount={unreadNotifications}
+            onMenuPress={() => setMenuVisible(true)}
+            onNotificationsPress={openNotifications}
           />
-        </GlassPanel>
+        </Animated.View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Selecciona deporte</Text>
-          <View style={styles.sportsList}>
-            {sportOptions.map((sport) => (
-              <SportTile
-                key={sport.id}
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: APP_FOOTER_HEIGHT + insets.bottom + spacing.xxxl },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View style={[styles.heroSection, getEntranceStyle(1, 16)]}>
+            <Text style={[styles.heroTitle, { color: theme.colors.text }]}>{copy.home.heroTitle}</Text>
+            <Text style={[styles.heroCopy, { color: theme.colors.textMuted }]}>{copy.home.heroCopy}</Text>
+          </Animated.View>
+
+          <Animated.View style={[styles.createCtaSection, getEntranceStyle(2, 22)]}>
+            <Pressable
+              onPress={openCreateEvent}
+              style={({ pressed }) => [styles.createCtaShell, pressed ? styles.cardPressed : undefined]}
+            >
+              <LinearGradient
+                colors={theme.primaryGradient}
+                end={{ x: 1, y: 0.2 }}
+                start={{ x: 0, y: 1 }}
+                style={styles.createCtaGradient}
+              >
+                <Feather color={theme.colors.white} name="plus-circle" size={18} />
+                <Text style={[styles.createCtaLabel, { color: theme.colors.white }]}>
+                  {copy.home.createEvent}
+                </Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
+
+          <Animated.View style={[styles.featureShell, getEntranceStyle(3, 28)]}>
+            <Animated.View style={focusCardStyle}>
+              <Pressable
                 onPress={() =>
                   Alert.alert(
-                    'Listado de eventos',
-                    `La vista de ${sport.label} queda definida para la fase siguiente.`,
+                    copy.home.eventAlertTitle,
+                    `${copy.home.eventAlertBodyPrefix} ${selectedSport.label} ${copy.home.eventAlertBodySuffix}`,
                   )
                 }
-                sport={sport}
+                style={({ pressed }) => [pressed ? styles.cardPressed : undefined]}
+              >
+                <ImageBackground
+                  imageStyle={styles.featureImage}
+                  source={{ uri: sportHeroImages[selectedSportId] ?? homeSpotlightImage }}
+                  style={[styles.featureCard, { backgroundColor: theme.colors.primaryDeep }]}
+                >
+                  <LinearGradient
+                    colors={featureGradient}
+                    locations={[0, 0.62, 1]}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View
+                    style={[
+                      styles.featureGlow,
+                      { backgroundColor: withAlpha(theme.colors.white, theme.mode === 'dark' ? '08' : '10') },
+                    ]}
+                  />
+                  <View style={styles.featureContent}>
+                    <View
+                      style={[
+                        styles.featureIconWrap,
+                        {
+                          backgroundColor: withAlpha(theme.colors.white, '1F'),
+                          borderColor: withAlpha(theme.colors.white, '20'),
+                        },
+                      ]}
+                    >
+                      <MaterialCommunityIcons
+                        color={theme.colors.white}
+                        name={selectedSport.iconName as never}
+                        size={30}
+                      />
+                    </View>
+                    <Text style={[styles.featureLabel, { color: theme.colors.white }]}>
+                      {selectedSport.label.toUpperCase()}
+                    </Text>
+                  </View>
+                </ImageBackground>
+              </Pressable>
+            </Animated.View>
+          </Animated.View>
+
+          <Animated.View style={[styles.gridSection, getEntranceStyle(4, 36)]}>
+            <View style={styles.grid}>
+              {secondarySports.map((sport) => (
+                <Pressable
+                  key={sport.id}
+                  onPress={() => handleSportSelection(sport)}
+                  style={({ pressed }) => [
+                    styles.gridCard,
+                    {
+                      backgroundColor: theme.colors.surfaceMuted,
+                      borderColor: theme.colors.panelBorder,
+                    },
+                    pressed ? styles.cardPressed : undefined,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.gridIconWrap,
+                      { backgroundColor: theme.colors.primarySoft },
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      color={theme.colors.primaryDeep}
+                      name={sport.iconName as never}
+                      size={28}
+                    />
+                  </View>
+                  <Text style={[styles.gridLabel, { color: theme.colors.textSoft }]}>
+                    {sport.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </Animated.View>
+
+          <Animated.View style={[styles.activitySection, getEntranceStyle(5, 42)]}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                {copy.home.eventsSectionTitle}
+              </Text>
+            </View>
+
+            <View style={[styles.searchShell, { backgroundColor: theme.colors.inputBackground }]}>
+              <Feather color={theme.colors.textSoft} name="search" size={18} />
+              <TextInput
+                onChangeText={setSearchQuery}
+                placeholder={copy.home.searchPlaceholder}
+                placeholderTextColor={theme.colors.inputPlaceholder}
+                selectionColor={theme.colors.primary}
+                style={[styles.searchInput, { color: theme.colors.text }]}
+                value={searchQuery}
               />
-            ))}
-          </View>
-        </View>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preview de eventos</Text>
-          <View style={styles.eventsList}>
-            {sampleEvents.map((event) => (
-              <GlassPanel key={event.id}>
-                <View style={styles.eventMetaRow}>
-                  <Text style={styles.eventSport}>{event.sport}</Text>
-                  <Text style={styles.eventSchedule}>{event.schedule}</Text>
+            <View style={styles.cardsColumn}>
+              {filteredEvents.length === 0 ? (
+                <View style={[styles.emptyCard, { backgroundColor: theme.colors.surfaceStrong }]}>
+                  <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
+                    {copy.home.emptyEventsTitle}
+                  </Text>
+                  <Text style={[styles.emptyCopy, { color: theme.colors.textMuted }]}>
+                    {copy.home.emptyEventsCopy}
+                  </Text>
                 </View>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventLocation}>{event.location}</Text>
-                <Text style={styles.eventOrganizer}>Organiza: {event.organizer}</Text>
-                <Text style={styles.eventParticipants}>{event.participants} participantes</Text>
-              </GlassPanel>
-            ))}
-          </View>
-        </View>
+              ) : (
+                filteredEvents.map((event) => {
+                  return (
+                    <EventFeedCard
+                      key={event.id}
+                      actionLabel={copy.home.openAction}
+                      event={event}
+                      onActionPress={() => openEventDetail(event)}
+                      onPress={() => openEventDetail(event)}
+                    />
+                  );
+                })
+              )}
+            </View>
+          </Animated.View>
+        </ScrollView>
 
-        <PrimaryButton label="Cerrar sesion" onPress={() => void signOut()} variant="ghost" />
-      </ScrollView>
+        <Animated.View
+          style={getEntranceStyle(5, 48)}
+        >
+          <AppFooterTabs
+            activeTab="home"
+            bottomInset={insets.bottom}
+            onTabPress={(nextTab: AppTab) =>
+              handleAppTabPress('home', nextTab, copy, navigation)
+            }
+          />
+        </Animated.View>
+
+        <AccountMenuSheet
+          onClose={() => setMenuVisible(false)}
+          onOpenMyEvents={() => navigation.navigate('MyEvents')}
+          onOpenProfile={() => navigation.navigate('Profile')}
+          onOpenSettings={() => navigation.navigate('Settings')}
+          onSignOut={() => {
+            void signOut();
+          }}
+          visible={menuVisible}
+        />
+      </View>
     </ScreenFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    paddingTop: spacing.lg,
-    gap: spacing.xl,
+  safeArea: {
+    flex: 1,
   },
-  header: {
+  container: {
+    flex: 1,
+  },
+  headerShell: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xs,
+    zIndex: 2,
+  },
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.md,
+    minHeight: 48,
   },
-  kicker: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 11,
-    letterSpacing: 2.2,
-    textTransform: 'uppercase',
+  languageRow: {
+    alignItems: 'flex-end',
+    marginTop: spacing.sm,
+  },
+  languageToggle: {
+    minWidth: 72,
+  },
+  headerButton: {
+    width: 42,
+    height: 42,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wordmark: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 20,
+    fontStyle: 'italic',
+    letterSpacing: -0.9,
     color: colors.primaryDeep,
   },
-  title: {
-    marginTop: spacing.xs,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 30,
-    color: colors.text,
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.lg,
   },
-  verifiedBadge: {
+  heroSection: {
+    gap: spacing.xs,
+  },
+  createCtaSection: {
+    gap: spacing.md,
+  },
+  createCtaShell: {
+    borderRadius: radii.pill,
+  },
+  createCtaGradient: {
+    minHeight: 58,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: 'rgba(188, 231, 222, 0.54)',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    justifyContent: 'center',
+    gap: spacing.sm,
+    ...shadows.button,
   },
-  verifiedLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 12,
-    color: colors.success,
+  createCtaLabel: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 15,
+    letterSpacing: 0.4,
+    color: colors.white,
   },
   heroTitle: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 26,
-    lineHeight: 32,
+    fontSize: 24,
+    lineHeight: 28,
+    letterSpacing: -1.1,
     color: colors.text,
   },
   heroCopy: {
-    marginTop: spacing.sm,
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 14,
-    lineHeight: 22,
+    lineHeight: 21,
     color: colors.textMuted,
   },
-  heroButton: {
-    marginTop: spacing.xl,
-  },
-  section: {
+  featureShell: {
     gap: spacing.md,
+  },
+  featureCard: {
+    minHeight: 160,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+    borderRadius: 34,
+    padding: spacing.lg,
+    backgroundColor: colors.primary,
+    ...shadows.card,
+  },
+  featureImage: {
+    borderRadius: 34,
+  },
+  featureGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  featureContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  featureIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+  },
+  featureLabel: {
+    flexShrink: 1,
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 29,
+    lineHeight: 30,
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+    color: colors.white,
+  },
+  gridSection: {
+    gap: spacing.md,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  gridCard: {
+    width: '47.5%',
+    minHeight: 136,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 242, 243, 0.84)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.82)',
+  },
+  gridIconWrap: {
+    width: 62,
+    height: 62,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 214, 219, 0.75)',
+    marginBottom: spacing.md,
+  },
+  gridLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 1.1,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    color: colors.textSoft,
+  },
+  activitySection: {
+    gap: spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   sectionTitle: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 22,
+    fontSize: 17,
+    lineHeight: 21,
     color: colors.text,
   },
-  sportsList: {
-    gap: spacing.md,
-  },
-  eventsList: {
-    gap: spacing.md,
-  },
-  eventMetaRow: {
+  searchShell: {
+    minHeight: 52,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.md,
+    backgroundColor: 'rgba(255, 214, 219, 0.52)',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  eventSport: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 11,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-    color: colors.primaryDeep,
-  },
-  eventSchedule: {
+  searchInput: {
+    flex: 1,
     fontFamily: 'PlusJakartaSans_600SemiBold',
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  eventTitle: {
-    marginTop: spacing.sm,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 20,
+    fontSize: 14,
     color: colors.text,
   },
-  eventLocation: {
-    marginTop: spacing.xs,
+  cardsColumn: {
+    gap: spacing.md,
+  },
+  emptyCard: {
+    borderRadius: 30,
+    padding: spacing.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    gap: spacing.sm,
+    ...shadows.card,
+  },
+  emptyTitle: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 22,
+    lineHeight: 26,
+    color: colors.text,
+  },
+  emptyCopy: {
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 14,
+    lineHeight: 21,
     color: colors.textMuted,
   },
-  eventOrganizer: {
-    marginTop: spacing.md,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    fontSize: 13,
-    color: colors.text,
+  footerShell: {
+    position: 'absolute',
+    left: spacing.md,
+    right: spacing.md,
+    bottom: 0,
   },
-  eventParticipants: {
-    marginTop: spacing.xs,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    fontSize: 13,
+  footerBlur: {
+    overflow: 'hidden',
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.82)',
+    backgroundColor: 'rgba(255, 244, 244, 0.78)',
+  },
+  footerBar: {
+    minHeight: FOOTER_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    paddingHorizontal: spacing.xs,
+    paddingTop: spacing.sm,
+  },
+  footerTab: {
+    alignItems: 'center',
+    gap: spacing.xs,
+    minWidth: 64,
+  },
+  footerIconChip: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerIconChipActive: {
+    backgroundColor: colors.primaryDeep,
+  },
+  footerLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 10,
+    letterSpacing: 1.3,
+    textTransform: 'uppercase',
     color: colors.textSoft,
+  },
+  footerLabelActive: {
+    color: colors.primaryDeep,
+  },
+  cardPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.98 }],
   },
 });

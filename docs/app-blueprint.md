@@ -21,6 +21,8 @@ Hive needs a hard gate before community access. The app should always move users
 
 - `AuthScreen`
   Login and registration entry point.
+- `OnboardingScreen`
+  Informational safety canvas shown right after account creation and before identity verification.
 - `VerificationScreen`
   Mandatory profile completion: full name, RUT, front ID, serial number image.
 - `PendingReviewScreen`

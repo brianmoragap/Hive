@@ -14,21 +14,11 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { EventsProvider } from './src/providers/EventsProvider';
+import { LocaleProvider } from './src/providers/LocaleProvider';
 import { SessionProvider } from './src/providers/SessionProvider';
+import { ThemeProvider, useAppTheme } from './src/providers/ThemeProvider';
 import { colors } from './src/theme/tokens';
-
-const navigationTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: colors.background,
-    primary: colors.primary,
-    card: colors.surfaceStrong,
-    text: colors.text,
-    border: 'transparent',
-    notification: colors.primary,
-  },
-};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -49,13 +39,40 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SessionProvider>
-        <NavigationContainer theme={navigationTheme}>
-          <StatusBar style="dark" />
-          <AppNavigator />
-        </NavigationContainer>
-      </SessionProvider>
+      <ThemeProvider>
+        <LocaleProvider>
+          <SessionProvider>
+            <EventsProvider>
+              <AppShell />
+            </EventsProvider>
+          </SessionProvider>
+        </LocaleProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
+  );
+}
+
+function AppShell() {
+  const { theme } = useAppTheme();
+
+  const navigationTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: theme.colors.background,
+      primary: theme.colors.primary,
+      card: theme.colors.surfaceStrong,
+      text: theme.colors.text,
+      border: 'transparent',
+      notification: theme.colors.primary,
+    },
+  };
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <StatusBar style={theme.statusBarStyle} />
+      <AppNavigator />
+    </NavigationContainer>
   );
 }
 

@@ -1,14 +1,17 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenFrame } from '../components/ScreenFrame';
+import { useLocale } from '../providers/LocaleProvider';
 import { colors, spacing } from '../theme/tokens';
 
 export function LoadingScreen() {
+  const { copy } = useLocale();
+
   return (
     <ScreenFrame>
       <View style={styles.container}>
         <Text style={styles.brand}>HIVE</Text>
-        <Text style={styles.copy}>Preparando tu acceso seguro</Text>
+        <Text style={styles.copy}>{copy.loading.copy}</Text>
         <ActivityIndicator color={colors.primaryDeep} size="large" />
       </View>
     </ScreenFrame>

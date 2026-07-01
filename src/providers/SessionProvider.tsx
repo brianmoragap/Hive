@@ -4,22 +4,35 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { hasSupabaseConfig, supabase } from '../lib/supabase';
+import { useLocale } from './LocaleProvider';
 import type {
   AuthCredentials,
+  CompleteOnboardingPayload,
+  OnboardingDraftPayload,
   SessionUser,
   UserProfile,
   VerificationPayload,
 } from '../types/domain';
+import { generateVerificationCode } from '../utils/onboarding';
 import { normalizeRut } from '../utils/rut';
 
 const MOCK_SESSION_KEY = '@hive/mock-session';
 const MOCK_PROFILE_KEY = '@hive/mock-profile';
+
+interface PendingOnboardingVerification extends OnboardingDraftPayload {
+  createdAt: string;
+  localCode?: string;
+}
 
 interface SessionContextValue {
   initializing: boolean;
   isMockMode: boolean;
   profile: UserProfile | null;
   user: SessionUser | null;
+  completeOnboarding: (payload: CompleteOnboardingPayload) => Promise<void>;
+  requestPhoneVerification: (
+    payload: OnboardingDraftPayload,
+  ) => Promise<{ debugCode?: string }>;
   signIn: (credentials: AuthCredentials) => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (credentials: AuthCredentials) => Promise<void>;
@@ -38,10 +51,15 @@ function buildBaseProfile(user: SessionUser, seed?: Partial<UserProfile>): UserP
   return {
     id: user.id,
     email: user.email,
+    birthDate: '',
     fullName: '',
     rut: '',
     avatarUrl: null,
+    onboardingCompleted: false,
     isVerified: false,
+    phoneNumber: '',
+    phoneVerified: false,
+    phoneVerifiedAt: null,
     verificationStatus: 'unsubmitted',
     eventsAttended: 0,
     favoriteSports: [],
@@ -64,10 +82,15 @@ function mapProfileRow(row: any, fallbackUser: SessionUser): UserProfile {
   return {
     id: row?.id ?? fallbackUser.id,
     email: row?.email ?? fallbackUser.email,
+    birthDate: row?.birth_date ?? '',
     fullName: row?.full_name ?? '',
     rut: row?.rut ?? '',
     avatarUrl: row?.avatar_url ?? null,
+    onboardingCompleted: Boolean(row?.onboarding_completed),
     isVerified: Boolean(row?.is_verified),
+    phoneNumber: row?.phone_number ?? '',
+    phoneVerified: Boolean(row?.phone_verified),
+    phoneVerifiedAt: row?.phone_verified_at ?? null,
     verificationStatus: row?.verification_status ?? 'unsubmitted',
     eventsAttended: row?.events_attended_count ?? 0,
     favoriteSports: row?.favorite_sports ?? [],
@@ -77,16 +100,21 @@ function mapProfileRow(row: any, fallbackUser: SessionUser): UserProfile {
   };
 }
 
-function getSupabaseClient() {
+function getSupabaseClient(configureSupabaseMessage: string) {
   if (!supabase) {
-    throw new Error('Supabase no esta configurado.');
+    throw new Error(configureSupabaseMessage);
   }
 
   return supabase;
 }
 
-async function uploadVerificationAsset(userId: string, uri: string, kind: 'front' | 'serial') {
-  const client = getSupabaseClient();
+async function uploadVerificationAsset(
+  userId: string,
+  uri: string,
+  kind: 'front' | 'serial' | 'selfie',
+  configureSupabaseMessage: string,
+) {
+  const client = getSupabaseClient(configureSupabaseMessage);
 
   const base64 = await FileSystem.readAsStringAsync(uri, {
     encoding: FileSystem.EncodingType.Base64,
@@ -115,7 +143,10 @@ async function uploadVerificationAsset(userId: string, uri: string, kind: 'front
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const { copy } = useLocale();
   const [initializing, setInitializing] = useState(true);
+  const [pendingOnboardingVerification, setPendingOnboardingVerification] =
+    useState<PendingOnboardingVerification | null>(null);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -141,7 +172,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { data, error } = await client.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
     if (error) {
@@ -155,46 +186,62 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     let active = true;
 
     async function bootstrap() {
-      if (isMockMode) {
-        const storedSession = await AsyncStorage.getItem(MOCK_SESSION_KEY);
-        const storedProfile = await AsyncStorage.getItem(MOCK_PROFILE_KEY);
+      try {
+        if (isMockMode) {
+          const storedSession = await AsyncStorage.getItem(MOCK_SESSION_KEY);
+          const storedProfile = await AsyncStorage.getItem(MOCK_PROFILE_KEY);
+
+          if (!active) {
+            return;
+          }
+
+          const nextUser = storedSession ? (JSON.parse(storedSession) as SessionUser) : null;
+          const nextProfile = storedProfile ? (JSON.parse(storedProfile) as UserProfile) : null;
+
+          setUser(nextUser);
+          setProfile(nextProfile);
+          setInitializing(false);
+          return;
+        }
+
+        const client = getSupabaseClient(copy.session.configureSupabase);
+        const {
+          data: { session },
+        } = await client.auth.getSession();
 
         if (!active) {
           return;
         }
 
-        const nextUser = storedSession ? (JSON.parse(storedSession) as SessionUser) : null;
-        const nextProfile = storedProfile ? (JSON.parse(storedProfile) as UserProfile) : null;
+        if (session?.user) {
+          const mappedUser = mapSupabaseUser(session.user);
+          setUser(mappedUser);
 
-        setUser(nextUser);
-        setProfile(nextProfile);
-        setInitializing(false);
-        return;
-      }
-
-      const client = getSupabaseClient();
-      const {
-        data: { session },
-      } = await client.auth.getSession();
-
-      if (!active) {
-        return;
-      }
-
-      if (session?.user) {
-        const mappedUser = mapSupabaseUser(session.user);
-        setUser(mappedUser);
-
-        const { data } = await client.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-        if (active) {
-          setProfile(data ? mapProfileRow(data, mappedUser) : buildBaseProfile(mappedUser));
+          const { data } = await client
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          if (active) {
+            setProfile(data ? mapProfileRow(data, mappedUser) : buildBaseProfile(mappedUser));
+          }
+        } else {
+          setUser(null);
+          setProfile(null);
         }
-      } else {
+
+        if (active) {
+          setInitializing(false);
+        }
+      } catch (error) {
+        console.warn('Hive Supabase bootstrap failed.', error);
+
+        if (!active) {
+          return;
+        }
+
         setUser(null);
         setProfile(null);
-      }
-
-      if (active) {
         setInitializing(false);
       }
     }
@@ -207,7 +254,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
       if (!active) {
         return;
@@ -248,7 +295,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!trimmedEmail || !password) {
-      throw new Error('Ingresa tu email y password.');
+      throw new Error(copy.session.invalidCredentials);
     }
 
     if (isMockMode) {
@@ -269,7 +316,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { data, error } = await client.auth.signInWithPassword({
       email: trimmedEmail,
       password,
@@ -280,7 +327,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!data.user) {
-      throw new Error('No se pudo iniciar sesion.');
+      throw new Error(copy.session.signInFailed);
     }
 
     const mappedUser = mapSupabaseUser(data.user);
@@ -302,7 +349,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!trimmedEmail || password.length < 6) {
-      throw new Error('Usa un email valido y una password de al menos 6 caracteres.');
+      throw new Error(copy.session.invalidRegistration);
     }
 
     if (isMockMode) {
@@ -320,7 +367,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { data, error } = await client.auth.signUp({
       email: trimmedEmail,
       password,
@@ -331,9 +378,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!data.session || !data.user) {
-      throw new Error(
-        'La cuenta fue creada, pero tu proyecto de Supabase exige confirmacion de email antes de entrar.',
-      );
+      throw new Error(copy.session.accountCreatedNeedsConfirmation);
     }
 
     const mappedUser = mapSupabaseUser(data.user);
@@ -344,25 +389,140 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (isMockMode) {
       await AsyncStorage.multiRemove([MOCK_SESSION_KEY, MOCK_PROFILE_KEY]);
+      setPendingOnboardingVerification(null);
       setUser(null);
       setProfile(null);
       return;
     }
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { error } = await client.auth.signOut();
 
     if (error) {
       throw error;
     }
 
+    setPendingOnboardingVerification(null);
     setUser(null);
     setProfile(null);
   };
 
+  const requestPhoneVerification = async (payload: OnboardingDraftPayload) => {
+    if (!user || !profile) {
+      throw new Error(copy.session.activeSessionRequired);
+    }
+
+    const nextPendingVerification: PendingOnboardingVerification = {
+      ...payload,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (isMockMode) {
+      const localCode = generateVerificationCode();
+      setPendingOnboardingVerification({
+        ...nextPendingVerification,
+        localCode,
+      });
+
+      return {
+        debugCode: __DEV__ ? localCode : undefined,
+      };
+    }
+
+    if (!user.email) {
+      throw new Error(copy.session.invalidCredentials);
+    }
+
+    const client = getSupabaseClient(copy.session.configureSupabase);
+    const { error } = await client.auth.signInWithOtp({
+      email: user.email,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setPendingOnboardingVerification(nextPendingVerification);
+    return {};
+  };
+
+  const completeOnboarding = async (payload: CompleteOnboardingPayload) => {
+    if (!user || !profile) {
+      throw new Error(copy.session.activeSessionRequired);
+    }
+
+    if (!pendingOnboardingVerification) {
+      throw new Error(copy.onboarding.codeRequestMissing);
+    }
+
+    const verifiedAt = new Date().toISOString();
+    const nextProfile: UserProfile = {
+      ...profile,
+      avatarUrl: pendingOnboardingVerification.selfieUri,
+      birthDate: pendingOnboardingVerification.birthDate,
+      onboardingCompleted: true,
+      phoneNumber: pendingOnboardingVerification.phoneNumber,
+      phoneVerified: true,
+      phoneVerifiedAt: verifiedAt,
+    };
+
+    if (isMockMode) {
+      if (payload.verificationCode.trim() !== pendingOnboardingVerification.localCode) {
+        throw new Error(copy.onboarding.invalidCode);
+      }
+
+      setPendingOnboardingVerification(null);
+      setProfile(nextProfile);
+      await AsyncStorage.setItem(MOCK_PROFILE_KEY, JSON.stringify(nextProfile));
+      return;
+    }
+
+    const client = getSupabaseClient(copy.session.configureSupabase);
+    const { error: otpError } = await client.auth.verifyOtp({
+      email: user.email,
+      token: payload.verificationCode.trim(),
+      type: 'email',
+    });
+
+    if (otpError) {
+      throw new Error(copy.onboarding.invalidCode);
+    }
+
+    const selfiePath = await uploadVerificationAsset(
+      user.id,
+      pendingOnboardingVerification.selfieUri,
+      'selfie',
+      copy.session.configureSupabase,
+    );
+
+    const { error } = await client.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      avatar_url: selfiePath,
+      birth_date: pendingOnboardingVerification.birthDate,
+      onboarding_completed: true,
+      phone_number: pendingOnboardingVerification.phoneNumber,
+      phone_verified: true,
+      phone_verified_at: verifiedAt,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setPendingOnboardingVerification(null);
+    setProfile({
+      ...nextProfile,
+      avatarUrl: selfiePath,
+    });
+  };
+
   const submitVerification = async (payload: VerificationPayload) => {
     if (!user) {
-      throw new Error('No hay una sesion activa.');
+      throw new Error(copy.session.activeSessionRequired);
     }
 
     const nextProfile = buildBaseProfile(user, {
@@ -381,10 +541,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const frontPath = await uploadVerificationAsset(user.id, payload.idFrontUri, 'front');
-    const serialPath = await uploadVerificationAsset(user.id, payload.idSerialUri, 'serial');
+    const frontPath = await uploadVerificationAsset(
+      user.id,
+      payload.idFrontUri,
+      'front',
+      copy.session.configureSupabase,
+    );
+    const serialPath = await uploadVerificationAsset(
+      user.id,
+      payload.idSerialUri,
+      'serial',
+      copy.session.configureSupabase,
+    );
 
-    const client = getSupabaseClient();
+    const client = getSupabaseClient(copy.session.configureSupabase);
     const { error: profileError } = await client.from('profiles').upsert({
       id: user.id,
       email: user.email,
@@ -431,7 +601,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    throw new Error('La aprobacion debe ocurrir desde el panel de revision.');
+    throw new Error(copy.session.noReviewApprovalHere);
   };
 
   const value = useMemo(
@@ -440,14 +610,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       isMockMode,
       profile,
       user,
+      requestPhoneVerification,
       signIn,
       signOut,
       signUp,
+      completeOnboarding,
       submitVerification,
       debugApproveProfile,
       refreshProfile,
     }),
-    [initializing, isMockMode, profile, user],
+    [copy, initializing, isMockMode, pendingOnboardingVerification, profile, user],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

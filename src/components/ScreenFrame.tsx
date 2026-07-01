@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, heroBackgroundImage } from '../theme/tokens';
+import { useAppTheme } from '../providers/ThemeProvider';
+import { heroBackgroundImage } from '../theme/tokens';
 
 interface ScreenFrameProps {
   children: React.ReactNode;
@@ -21,8 +22,10 @@ export function ScreenFrame({
   variant = 'gradient',
   contentStyle,
 }: ScreenFrameProps) {
+  const { theme } = useAppTheme();
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
       {variant === 'photo' ? (
         <ImageBackground
           resizeMode="cover"
@@ -30,22 +33,40 @@ export function ScreenFrame({
           style={StyleSheet.absoluteFill}
         >
           <LinearGradient
-            colors={[
-              'rgba(25, 12, 18, 0.55)',
-              'rgba(74, 28, 38, 0.28)',
-              'rgba(255, 244, 244, 0.12)',
-            ]}
+            colors={theme.photoOverlay}
             style={StyleSheet.absoluteFill}
           />
         </ImageBackground>
       ) : (
         <LinearGradient
-          colors={[colors.background, colors.backgroundWarm, '#FFEFE8']}
+          colors={[
+            theme.colors.background,
+            theme.colors.backgroundWarm,
+            theme.colors.backgroundWarm,
+          ]}
           style={StyleSheet.absoluteFill}
         >
-          <View style={[styles.blob, styles.blobCoral]} />
-          <View style={[styles.blob, styles.blobMint]} />
-          <View style={[styles.blob, styles.blobLilac]} />
+          <View
+            style={[
+              styles.blob,
+              styles.blobCoral,
+              { backgroundColor: theme.colors.blobCoral },
+            ]}
+          />
+          <View
+            style={[
+              styles.blob,
+              styles.blobMint,
+              { backgroundColor: theme.colors.blobMint },
+            ]}
+          />
+          <View
+            style={[
+              styles.blob,
+              styles.blobLilac,
+              { backgroundColor: theme.colors.blobLilac },
+            ]}
+          />
         </LinearGradient>
       )}
 
@@ -59,7 +80,6 @@ export function ScreenFrame({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
@@ -73,20 +93,17 @@ const styles = StyleSheet.create({
     height: 280,
     top: -80,
     right: -60,
-    backgroundColor: 'rgba(255, 94, 94, 0.16)',
   },
   blobMint: {
     width: 220,
     height: 220,
     bottom: 120,
     left: -70,
-    backgroundColor: 'rgba(188, 231, 222, 0.28)',
   },
   blobLilac: {
     width: 180,
     height: 180,
     top: 220,
     left: 220,
-    backgroundColor: 'rgba(232, 215, 255, 0.22)',
   },
 });

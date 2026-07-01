@@ -1,0 +1,271 @@
+HIVE — LANDING PAGE
+Contenido completo ordenado por sección
+========================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NAVEGACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Logo:        HIVE
+Links:       Qué es  |  Disciplinas  |  Seguridad  |  Beta
+Botón CTA:   ÚNETE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. HERO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Eyebrow:     Primera app femenina de deporte en Chile
+
+Marca:       Hive
+Título:      Mejor acompañadas.
+
+Subtítulo:   Comunidad de mujeres verificadas para salir a correr, pedalear
+             y explorar sin miedo. Seguras, juntas, siempre.
+
+Botón 1:     Quiero ser Beta Tester
+Botón 2:     Ver cómo funciona
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. EL PROBLEMA (sección oscura con chat)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:    El problema
+Título:      ¿Te suenan estos mensajes?
+Texto:       Cada vez que sales a entrenar sola, existe una conversación
+             silenciosa de miedo e incertidumbre. No debería ser así.
+
+Burbujas de chat:
+  PM →  "Les aviso cuando llegue... ando sola esta mañana"          07:14
+  SL →  "Te envié ubicación en vivo, avísame cuando estés segura"   07:31
+  MR →  "Si no llego a las 3, pasó algo. Tú sabes qué hacer"        14:22
+  KV →  "Mejor vamos en grupo... solas da miedo esa ruta"           19:05
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. ESTADÍSTICAS (franja oscura)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Stat 1:   7/10
+          mujeres sienten miedo al entrenar solas en espacios públicos
+
+Stat 2:   90%
+          de las apps de fitness no tienen ninguna herramienta de seguridad real
+
+Stat 3:   2.400+
+          mujeres ya en lista de espera para unirse a Hive
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. QUÉ ES HIVE (sección clara)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Eyebrow:     Por qué Hive
+Título:      La primera app 100% femenina de deporte en Chile
+
+Frase derecha:
+  "No es Strava.
+   No es Garmin.
+   Es tu colmena."
+
+  El lugar donde mujeres que entrenan duro encuentran compañía
+  verificada, segura y de verdad.
+
+--- CARD 01 — SEGURIDAD INTELIGENTE ---
+Etiqueta:  01 — Seguridad
+Título:    Seguridad Inteligente
+Texto:     Solo mujeres verificadas con cédula de identidad y selfie en
+           vivo. Cada miembro es real. Cada salida, confiable.
+           Check-ins automáticos y contactos de emergencia integrados.
+Tag:       ID Verificado
+
+--- CARD 02 — COMUNIDAD QUE APAÑA ---
+Etiqueta:  02 — Comunidad
+Título:    Comunidad que Apaña
+Texto:     Encuentra mujeres con tu ritmo y tus horarios. Únete a salidas
+           organizadas por lideresas verificadas. Feed de actividad real.
+Tag:       Social-Fitness
+
+--- CARD 03 — ECOSISTEMA PREMIUM ---
+Etiqueta:  03 — Ecosistema
+Título:    Ecosistema Premium
+Texto:     Más que una app. Descuentos en marcas deportivas, eventos
+           exclusivos, retos por disciplina. Ser parte de Hive es un
+           estilo de vida.
+Tag:       Beneficios Exclusivos
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CÓMO FUNCIONA (sección oscura con colmena)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Cómo funciona
+Título:    Tres pasos para entrar a la colmena
+
+Paso 01 — Descarga y regístrate
+  Crea tu cuenta con correo o número de teléfono.
+  Solo toma 2 minutos. Disponible en iOS y Android.
+
+Paso 02 — Verifica tu identidad
+  Sube tu cédula de identidad y una selfie en vivo.
+  Nuestro equipo revisa en menos de 24 horas para confirmar que eres tú.
+
+Paso 03 — Únete a salidas
+  Explora eventos cerca de ti, elige tu disciplina y únete a salidas
+  con mujeres verificadas. Sin miedo, con comunidad.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. DISCIPLINAS (scroll horizontal)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Disciplinas
+Título:    Cinco mundos, una colmena
+
+Running
+  Ritmos compartidos para ciudad y parque.
+  Grupos por pace, seguras en cada kilómetro.
+
+Ciclismo Ruta
+  Pelotones seguros, puntos de encuentro claros.
+  Lideresas certificadas en cada salida.
+
+MTB
+  Salidas técnicas con líderes verificadas.
+  Trazas, desnivel y apoyo real en cada descenso.
+
+Trekking
+  Senderos con comunidad, check-ins previos
+  y planes de emergencia visibles.
+
+Trail Running
+  Altimetría, apoyo mutuo y planes visibles.
+  El monte tiene nombre de mujer.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. DENTRO DE LA COLMENA (mockup app)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Dentro de la colmena
+Título:    ¿Qué pasa adentro?
+Texto:     Hive es tu comunidad deportiva personalizada. Desde el momento
+           en que te verificas, accedes a un ecosistema diseñado por y
+           para mujeres que se mueven.
+
+Features:
+  ✓ Feed de eventos cercanos en tiempo real
+    Filtra por disciplina, distancia y dificultad
+
+  ✓ Perfil público verificado con historial de salidas
+    Construye tu reputación en la comunidad
+
+  ✓ Notificaciones de check-in y alertas de seguridad
+    Tu red sabe que estás bien
+
+  ✓ Crea tus propios eventos y lidera salidas
+    Conviértete en liderasa verificada
+
+Botón:     Quiero acceso anticipado →
+
+Mockup app (pantalla):
+  Saludo:  "Hola, Valentina — ¿A qué salimos hoy?"
+  Eventos:
+    Running · Sunrise Tempo Costanera · Dom 07:15 · Parque Bicentenario
+    Ciclismo Ruta · Ruta Coral al Cajón · Sáb 08:30 · Plaza San Enrique
+    Trail Running · El Monte tiene Nombre · Vie 06:00 · Farellones
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. SEGURIDAD (sección clara)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Solo mujeres verificadas
+Título:    Seguridad no es un feature. Es el cimiento.
+Texto:     Cada mujer que entra a Hive pasa por verificación de identidad
+           real. Sin excepciones. Así funciona nuestra colmena.
+
+Paso 01 — Documento
+  Foto de tu cédula de identidad
+  Frente y serial. Encriptado en tránsito y en reposo. Nunca compartido.
+
+Paso 02 — Biometría
+  Selfie en vivo
+  Una foto en tiempo real. No se admiten fotos de pantalla ni duplicados.
+
+Paso 03 — Validación
+  Revisión humana
+  Nuestro equipo revisa en menos de 24h. Cero bots en esta parte.
+
+Paso 04 — Acceso
+  Bienvenida a la colmena
+  Verificada y parte de una comunidad donde todas pasaron el mismo proceso.
+
+Panel Protocolo Hive:
+  "Seguridad real, no una promesa"
+  Verificación en 4 pasos que garantiza que cada mujer en la app
+  es quien dice ser.
+
+  ✓ Identidad verificada con documento real
+  ✓ Lideresas con certificación adicional
+  ✓ Check-ins automáticos durante la salida
+  ✓ Red de emergencia integrada en la app
+  ✓ Datos encriptados, revisión humana siempre
+
+  Pill: 98% se sienten más seguras con Hive
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TESTIMONIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Ellas lo dicen
+Título:    Lo que siente la colmena
+
+★★★★★ Paula Morales — Running · Santiago — Verificada
+"Por fin puedo salir a correr el domingo a las 6am sabiendo que
+alguien más sabe dónde estoy y que todas son reales.
+Eso no lo da ninguna otra app."
+
+★★★★★ Sofía Luengo — Trail Running · Vitacura — Verificada
+"Llevo dos años haciendo trail sola porque no encontraba grupo.
+Con Hive encontré a cuatro mujeres de mi nivel en una semana.
+El sábado hicimos Farellones."
+
+★★★★★ Karina Varela — Ciclismo Ruta · Providencia — Liderasa
+"Organizé mi primera salida ciclista como liderasa. 12 mujeres
+verificadas, ruta segura, punto de encuentro claro.
+Nadie se quedó atrás. Eso es Hive."
+
+★★★★★ Macarena Ríos — Trekking · Las Condes — Verificada
+"Hice trekking por primera vez con un grupo Hive. Me fui sintiéndome
+parte de algo. Ahora organizo mis propias salidas cada mes.
+La colmena me cambió."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. BETA TESTER — CTA FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Etiqueta:  Beta Tester
+Título:    Sé de las primeras en entrar.
+Texto:     Hive está en desarrollo activo. Estamos buscando mujeres
+           apasionadas del deporte para probar la app antes del
+           lanzamiento oficial. Cupos limitados, acceso gratuito permanente.
+
+Campo:     tu@correo.com
+Botón:     Quiero ser Beta →
+
+Nota:      Sin spam. Solo te avisamos cuando esté lista tu invitación.
+           Puedes cancelar cuando quieras.
+
+Mockup app bienvenida:
+  "¡Bienvenida, Abeja! — Tu verificación fue aprobada"
+  Evento sugerido: Running · Bienvenida a la colmena
+  Próx. sábado · 08:00 · Parque Araucano
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FOOTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Logo:        HIVE
+Tagline:     La primera comunidad deportiva 100% femenina de Chile.
+             Verificadas, seguras, juntas.
+
+Producto:    Qué es Hive / Disciplinas / Seguridad / Cómo funciona
+Comunidad:   Beta Testers / Historias / Liderasas / Eventos
+Legal:       Privacidad / Términos de uso / Política de verificación / Contacto
+
+Copyright:   © 2026 HIVE. Hecho con amor en Chile 🇨🇱
+             Primera app femenina de deporte en Latinoamérica

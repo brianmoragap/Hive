@@ -5,6 +5,17 @@ export type SportType =
   | 'trekking'
   | 'trail_running';
 
+export type AppTab = 'home' | 'activity' | 'community' | 'profile';
+export type EventVisibility = 'public' | 'private';
+export type EventStatus = 'scheduled' | 'completed' | 'cancelled';
+export type EventActivityType =
+  | 'created'
+  | 'updated'
+  | 'invited'
+  | 'completed'
+  | 'cancelled';
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced';
+
 export type VerificationStatus =
   | 'unsubmitted'
   | 'pending'
@@ -23,7 +34,12 @@ export interface UserProfile {
   fullName: string;
   rut: string;
   avatarUrl?: string | null;
+  birthDate: string;
+  onboardingCompleted: boolean;
   isVerified: boolean;
+  phoneNumber: string;
+  phoneVerified: boolean;
+  phoneVerifiedAt?: string | null;
   verificationStatus: VerificationStatus;
   eventsAttended: number;
   favoriteSports: SportType[];
@@ -44,6 +60,28 @@ export interface VerificationPayload {
   idSerialUri: string;
 }
 
+export interface OnboardingDraftPayload {
+  birthDate: string;
+  phoneNumber: string;
+  selfieUri: string;
+}
+
+export interface CompleteOnboardingPayload extends OnboardingDraftPayload {
+  verificationCode: string;
+}
+
+export interface EventDraftPayload {
+  title: string;
+  sport: SportType;
+  skillLevel: SkillLevel;
+  date: string;
+  time: string;
+  meetingPoint: string;
+  participantLimit: number;
+  verifiedOnly: boolean;
+  visibility: EventVisibility;
+}
+
 export interface SportOption {
   id: SportType;
   label: string;
@@ -60,4 +98,82 @@ export interface EventPreview {
   location: string;
   organizer: string;
   participants: number;
+}
+
+export interface HiveMember {
+  id: string;
+  fullName: string;
+  handle: string;
+  city: string;
+  favoriteSport: SportType;
+  isVerified: boolean;
+  avatarUrl?: string | null;
+}
+
+export interface EventActivityLog {
+  id: string;
+  type: EventActivityType;
+  createdAt: string;
+  audienceCount: number;
+  note?: string | null;
+}
+
+export interface EventAttendancePass {
+  id: string;
+  userId: string;
+  token: string;
+  manualCode: string;
+  issuedAt: string;
+  revokedAt?: string | null;
+  checkedInAt?: string | null;
+  checkedInBy?: string | null;
+}
+
+export interface EventReview {
+  id: string;
+  reviewerId: string;
+  reviewerName: string;
+  eventRating: number;
+  organizerRating: number;
+  createdAt: string;
+}
+
+export interface RatingStats {
+  average: number;
+  count: number;
+}
+
+export interface EventPassPayload {
+  type: 'hive_event_pass';
+  version: 1;
+  eventId: string;
+  userId: string;
+  token: string;
+  issuedAt: string;
+}
+
+export interface EventRecord extends EventDraftPayload {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  attendeeIds: string[];
+  attendancePasses: EventAttendancePass[];
+  reviews: EventReview[];
+  shareToken: string;
+  status: EventStatus;
+  completedAt?: string | null;
+  cancellationReason?: string | null;
+  activityLog: EventActivityLog[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationDigest {
+  id: string;
+  action: Exclude<EventActivityType, 'created'>;
+  eventId: string;
+  eventTitle: string;
+  audienceCount: number;
+  createdAt: string;
+  read: boolean;
 }

@@ -7,7 +7,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radii, shadows } from '../theme/tokens';
+import { useAppTheme } from '../providers/ThemeProvider';
+import { radii, shadows } from '../theme/tokens';
 
 interface GlassPanelProps {
   children: React.ReactNode;
@@ -15,16 +16,27 @@ interface GlassPanelProps {
 }
 
 export function GlassPanel({ children, style }: GlassPanelProps) {
+  const { theme } = useAppTheme();
+
   return (
-    <View style={[styles.shell, style]}>
+    <View
+      style={[
+        styles.shell,
+        {
+          backgroundColor: theme.colors.surfaceSoft,
+          borderColor: theme.colors.panelBorder,
+        },
+        style,
+      ]}
+    >
       <BlurView
         experimentalBlurMethod="dimezisBlurView"
         intensity={24}
         style={StyleSheet.absoluteFill}
-        tint="light"
+        tint={theme.blurTint}
       />
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.82)', 'rgba(255, 244, 244, 0.62)']}
+        colors={[theme.colors.panelGradientStart, theme.colors.panelGradientEnd]}
         style={StyleSheet.absoluteFill}
       />
       <View style={styles.content}>{children}</View>
@@ -37,8 +49,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.32)',
-    backgroundColor: colors.surfaceSoft,
     ...shadows.card,
   },
   content: {
