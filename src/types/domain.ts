@@ -78,7 +78,6 @@ export interface EventDraftPayload {
   time: string;
   meetingPoint: string;
   participantLimit: number;
-  verifiedOnly: boolean;
   visibility: EventVisibility;
 }
 
@@ -168,12 +167,17 @@ export interface EventRecord extends EventDraftPayload {
   updatedAt: string;
 }
 
+export type NotificationPerspective = 'organizer' | 'attendee';
+
+export type VerificationDecisionAction = 'verification_approved' | 'verification_rejected';
+
 export interface NotificationDigest {
   id: string;
-  action: Exclude<EventActivityType, 'created'>;
+  action: Exclude<EventActivityType, 'created'> | VerificationDecisionAction;
   eventId: string;
   eventTitle: string;
   audienceCount: number;
   createdAt: string;
   read: boolean;
+  perspective: NotificationPerspective;
 }

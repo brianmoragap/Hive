@@ -13,7 +13,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
@@ -94,7 +93,6 @@ export function CreateEventScreen() {
   const [time, setTime] = useState('');
   const [meetingPoint, setMeetingPoint] = useState('');
   const [participantLimit, setParticipantLimit] = useState(12);
-  const [verifiedOnly, setVerifiedOnly] = useState(true);
   const [visibility, setVisibility] = useState<EventVisibility>('public');
   const [error, setError] = useState<string | null>(null);
 
@@ -124,7 +122,6 @@ export function CreateEventScreen() {
       setTime(existingEvent.time);
       setMeetingPoint(existingEvent.meetingPoint);
       setParticipantLimit(existingEvent.participantLimit);
-      setVerifiedOnly(existingEvent.verifiedOnly);
       setVisibility(existingEvent.visibility);
       return;
     }
@@ -205,7 +202,6 @@ export function CreateEventScreen() {
       time,
       meetingPoint: meetingPoint.trim(),
       participantLimit,
-      verifiedOnly,
       visibility,
     };
 
@@ -469,24 +465,6 @@ export function CreateEventScreen() {
                   onPress={() => setParticipantLimit((current) => Math.min(current + 1, 50))}
                 />
               </View>
-            </View>
-
-            <View style={styles.verifiedRow}>
-              <View style={styles.toggleCopy}>
-                <Text style={styles.toggleLabel}>{copy.createEvent.verifiedOnlyLabel}</Text>
-                <Text style={styles.toggleDescription}>
-                  {copy.createEvent.verifiedOnlyCopy}
-                </Text>
-              </View>
-              <Switch
-                onValueChange={setVerifiedOnly}
-                thumbColor={theme.colors.white}
-                trackColor={{
-                  false: theme.colors.surfaceSoft,
-                  true: theme.colors.primary,
-                }}
-                value={verifiedOnly}
-              />
             </View>
           </Animated.View>
 
@@ -906,27 +884,6 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_800ExtraBold',
     fontSize: 16,
     color: colors.text,
-  },
-  verifiedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  toggleCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  toggleLabel: {
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 16,
-    color: colors.text,
-  },
-  toggleDescription: {
-    fontFamily: 'PlusJakartaSans_500Medium',
-    fontSize: 13,
-    lineHeight: 18,
-    color: colors.textMuted,
   },
   errorCopy: {
     fontFamily: 'PlusJakartaSans_700Bold',

@@ -9,11 +9,13 @@ import {
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import type { LinkingOptions } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from './src/navigation/AppNavigator';
+import type { RootStackParamList } from './src/navigation/AppNavigator';
 import { EventsProvider } from './src/providers/EventsProvider';
 import { LocaleProvider } from './src/providers/LocaleProvider';
 import { SessionProvider } from './src/providers/SessionProvider';
@@ -52,6 +54,15 @@ export default function App() {
   );
 }
 
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['hive://'],
+  config: {
+    screens: {
+      JoinEvent: 'join/:token',
+    },
+  },
+};
+
 function AppShell() {
   const { theme } = useAppTheme();
 
@@ -69,7 +80,7 @@ function AppShell() {
   };
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer linking={linking} theme={navigationTheme}>
       <StatusBar style={theme.statusBarStyle} />
       <AppNavigator />
     </NavigationContainer>

@@ -41,7 +41,6 @@ export interface SupabaseEventRow {
   status: EventStatus;
   title: string;
   updated_at: string;
-  verified_only: boolean;
   visibility: EventVisibility;
 }
 
@@ -238,7 +237,6 @@ export function hydrateRemoteEvents(input: {
         time: schedule.time,
         meetingPoint: row.meeting_point?.trim() || row.location_name?.trim() || '',
         participantLimit: row.max_participants ?? 12,
-        verifiedOnly: row.verified_only,
         visibility: row.visibility,
         creatorId: row.organizer_id,
         creatorName: creator?.fullName ?? 'Hive Member',
@@ -260,6 +258,19 @@ export function hydrateRemoteEvents(input: {
 }
 
 export function mapNotificationRow(row: SupabaseNotificationRow): NotificationDigest | null {
+  if (row.type === 'verification_approved' || row.type === 'verification_rejected') {
+    return {
+      id: row.id,
+      action: row.type,
+      eventId: '',
+      eventTitle: row.body,
+      audienceCount: 0,
+      createdAt: row.created_at,
+      read: Boolean(row.read_at),
+      perspective: 'attendee',
+    };
+  }
+
   const action = (() => {
     if (typeof row.metadata?.action === 'string') {
       return row.metadata.action;
@@ -298,6 +309,7 @@ export function mapNotificationRow(row: SupabaseNotificationRow): NotificationDi
         : 0,
     createdAt: row.created_at,
     read: Boolean(row.read_at),
+    perspective: row.metadata?.recipient === 'attendee' ? 'attendee' : 'organizer',
   };
 }
 
@@ -306,9 +318,11 @@ export function buildNotificationInsert(
   event: Pick<EventRecord, 'id' | 'title'>,
   audienceCount: number,
   userId: string,
+  recipient: 'organizer' | 'attendee' = 'organizer',
 ) {
   return {
     user_id: userId,
+    event_id: event.id,
     type: action,
     title: event.title,
     body: `${action}:${event.title}`,
@@ -317,6 +331,7 @@ export function buildNotificationInsert(
       audience_count: audienceCount,
       event_id: event.id,
       event_title: event.title,
+      recipient,
     },
   };
 }

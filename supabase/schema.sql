@@ -225,6 +225,7 @@ create table public.user_safety_blocks (
 create table public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
+  event_id uuid references public.events(id) on delete cascade,
   type public.notification_type not null,
   title text not null,
   body text not null,
@@ -830,6 +831,21 @@ create policy "notifications insertable by owner"
   for insert
   to authenticated
   with check (auth.uid() = user_id);
+
+create policy "organizer can notify event participants"
+  on public.notifications
+  for insert
+  to authenticated
+  with check (
+    event_id is not null
+    and exists (
+      select 1
+      from public.events e
+      where e.id = notifications.event_id
+        and e.organizer_id = auth.uid()
+    )
+    and public.is_joined_event_participant(notifications.event_id, notifications.user_id)
+  );
 
 create policy "notifications updatable by owner"
   on public.notifications

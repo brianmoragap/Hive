@@ -345,12 +345,12 @@ export function EventDetailScreen() {
             />
             <InfoTile
               iconName="shield-check"
-              subtitle={`${copy.eventDetail.visibilityLabel}: ${
+              subtitle={
                 event.visibility === 'private'
                   ? copy.eventDetail.accessPrivate
                   : copy.eventDetail.accessPublic
-              }`}
-              title={event.verifiedOnly ? copy.eventDetail.verifiedOnly : copy.eventDetail.accessPublic}
+              }
+              title={copy.eventDetail.visibilityLabel}
             />
           </View>
 

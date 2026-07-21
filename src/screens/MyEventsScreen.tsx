@@ -379,7 +379,6 @@ function EventCard({
           iconName="users"
           label={`${copy.myEvents.attendeesLabel}: ${event.attendeeIds.length}`}
         />
-        <FactChip iconName="shield" label={copy.myEvents.verifiedOnlyBadge} muted={!event.verifiedOnly} />
         <FactChip
           iconName="hash"
           label={totalParticipantsLabel}

@@ -44,6 +44,23 @@ export function eventMatchesSearch(
 }
 
 export function formatNotificationLine(copy: AppCopy, notification: NotificationDigest) {
+  if (notification.action === 'verification_approved' || notification.action === 'verification_rejected') {
+    return notification.eventTitle;
+  }
+
+  if (notification.perspective === 'attendee') {
+    const template =
+      notification.action === 'cancelled'
+        ? copy.home.notificationsCancelledReceived
+        : notification.action === 'completed'
+          ? copy.home.notificationsCompletedReceived
+        : notification.action === 'invited'
+          ? copy.home.notificationsInvitedReceived
+          : copy.home.notificationsUpdatedReceived;
+
+    return template.replace('{event}', notification.eventTitle);
+  }
+
   const prefix =
     notification.action === 'cancelled'
       ? copy.home.notificationsCancelledPrefix

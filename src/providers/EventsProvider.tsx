@@ -93,6 +93,7 @@ interface EventsContextValue {
   createEvent: (payload: EventDraftPayload) => Promise<EventRecord>;
   getAttendancePass: (eventId: string, userId?: string) => EventAttendancePass | null;
   getEventById: (eventId: string) => EventRecord | null;
+  getEventByShareToken: (shareToken: string) => EventRecord | null;
   getEventReviewByUser: (eventId: string, userId?: string) => EventReview | null;
   getEventReviewStats: (eventId: string) => RatingStats;
   getOrganizerReviewStats: (organizerId: string) => RatingStats;
@@ -175,7 +176,6 @@ function buildSeedEvents() {
       time: '07:30',
       meetingPoint: 'Parque Bicentenario, Vitacura',
       participantLimit: 8,
-      verifiedOnly: true,
       visibility: 'public' as const,
       creatorId: 'member-paula',
       creatorName: 'Paula Reyes',
@@ -206,7 +206,6 @@ function buildSeedEvents() {
       time: '18:30',
       meetingPoint: 'Pedro de Valdivia Norte',
       participantLimit: 10,
-      verifiedOnly: true,
       visibility: 'public' as const,
       creatorId: 'member-elena',
       creatorName: 'Elena Soto',
@@ -237,7 +236,6 @@ function buildSeedEvents() {
       time: '08:00',
       meetingPoint: 'Plaza San Enrique',
       participantLimit: 14,
-      verifiedOnly: true,
       visibility: 'public' as const,
       creatorId: 'member-catalina',
       creatorName: 'Catalina Díaz',
@@ -268,7 +266,6 @@ function buildSeedEvents() {
       time: '09:00',
       meetingPoint: 'Centro de visitantes Yerba Loca',
       participantLimit: 12,
-      verifiedOnly: true,
       visibility: 'public' as const,
       creatorId: 'member-manuela',
       creatorName: 'Manuela Araya',
@@ -299,7 +296,6 @@ function buildSeedEvents() {
       time: '08:30',
       meetingPoint: 'Parque Aguas de Ramón',
       participantLimit: 9,
-      verifiedOnly: true,
       visibility: 'public' as const,
       creatorId: 'member-sofia',
       creatorName: 'Sofía Mella',
@@ -476,11 +472,12 @@ function createNotification(
     audienceCount,
     createdAt: new Date().toISOString(),
     read: false,
+    perspective: 'organizer',
   };
 }
 
 function buildShareLink(event: EventRecord) {
-  return `https://hive.app/join/${event.shareToken}`;
+  return `hive://join/${event.shareToken}`;
 }
 
 export function EventsProvider({ children }: { children: React.ReactNode }) {
@@ -550,7 +547,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       supabase
         .from('events')
         .select(
-          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, verified_only, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
+          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
         )
         .order('updated_at', { ascending: false }),
       supabase
@@ -626,10 +623,39 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
       const { error } = await supabase
         .from('notifications')
-        .insert(buildNotificationInsert(action, event, audienceCount, user.id));
+        .insert(buildNotificationInsert(action, event, audienceCount, user.id, 'organizer'));
 
       if (error) {
         console.warn('Hive remote notification insert failed.', error);
+      }
+    },
+    [user],
+  );
+
+  const pushAttendeeNotifications = useCallback(
+    async (action: NotificationDigest['action'], event: EventRecord, audienceUserIds: string[]) => {
+      if (!supabase || !user) {
+        return;
+      }
+
+      const recipients = Array.from(new Set(audienceUserIds)).filter(
+        (recipientId) => recipientId !== user.id,
+      );
+
+      if (recipients.length === 0) {
+        return;
+      }
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(
+          recipients.map((recipientId) =>
+            buildNotificationInsert(action, event, recipients.length, recipientId, 'attendee'),
+          ),
+        );
+
+      if (error) {
+        console.warn('Hive remote attendee notification insert failed.', error);
       }
     },
     [user],
@@ -753,11 +779,10 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           organizer_id: user.id,
           visibility: payload.visibility,
           status: 'scheduled',
-          verified_only: payload.verifiedOnly,
           max_participants: payload.participantLimit,
         })
         .select(
-          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, verified_only, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
+          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
         )
         .single();
 
@@ -840,7 +865,6 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           location_name: payload.meetingPoint,
           meeting_point: payload.meetingPoint,
           visibility: payload.visibility,
-          verified_only: payload.verifiedOnly,
           max_participants: payload.participantLimit,
         })
         .eq('id', eventId);
@@ -867,6 +891,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       await pushRemoteNotification('updated', nextEvent, targetEvent.attendeeIds.length);
+      await pushAttendeeNotifications('updated', nextEvent, targetEvent.attendeeIds);
 
       return {
         attendeeCount: nextEvent.attendeeIds.length,
@@ -953,6 +978,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       await pushRemoteNotification('cancelled', nextEvent, targetEvent.attendeeIds.length);
+      await pushAttendeeNotifications('cancelled', nextEvent, targetEvent.attendeeIds);
 
       return {
         attendeeCount: nextEvent.attendeeIds.length,
@@ -1041,6 +1067,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       await pushRemoteNotification('completed', nextEvent, targetEvent.attendeeIds.length);
+      await pushAttendeeNotifications('completed', nextEvent, targetEvent.attendeeIds);
 
       return {
         attendeeCount: nextEvent.attendeeIds.length,
@@ -1181,6 +1208,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       await pushRemoteNotification('invited', nextEvent, acceptedInvites.length);
+      await pushAttendeeNotifications('invited', nextEvent, acceptedInvites);
 
       return {
         addedCount: acceptedInvites.length,
@@ -1822,6 +1850,9 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
   const getEventById = (eventId: string) => events.find((event) => event.id === eventId) ?? null;
 
+  const getEventByShareToken = (shareToken: string) =>
+    events.find((event) => event.shareToken === shareToken) ?? null;
+
   const value = {
     events,
     hiveMembers,
@@ -1835,6 +1866,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     createEvent,
     getAttendancePass,
     getEventById,
+    getEventByShareToken,
     getEventReviewByUser,
     getEventReviewStats,
     getOrganizerReviewStats,

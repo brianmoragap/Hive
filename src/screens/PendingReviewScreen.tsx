@@ -1,6 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useRef, useState } from 'react';
 import {
+  AppState,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,15 +17,76 @@ import { useLocale } from '../providers/LocaleProvider';
 import { useSession } from '../providers/SessionProvider';
 import { colors, spacing } from '../theme/tokens';
 
+const POLL_INTERVAL_MS = 20000;
+
 export function PendingReviewScreen() {
   const { copy } = useLocale();
-  const { debugApproveProfile, isMockMode, profile, signOut } = useSession();
+  const { debugApproveProfile, isMockMode, profile, refreshProfile, signOut } = useSession();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshProfileRef = useRef(refreshProfile);
+  refreshProfileRef.current = refreshProfile;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const safeRefresh = async () => {
+      try {
+        await refreshProfileRef.current();
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Hive pending review refresh failed.', error);
+        }
+      }
+    };
+
+    void safeRefresh();
+
+    const intervalId = setInterval(() => {
+      void safeRefresh();
+    }, POLL_INTERVAL_MS);
+
+    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        void safeRefresh();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      appStateSubscription.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+
+    try {
+      await refreshProfile();
+    } catch (error) {
+      console.warn('Hive pending review manual refresh failed.', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <ScreenFrame>
       <StatusBar style="dark" />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            colors={[colors.primaryDeep]}
+            onRefresh={() => void handleManualRefresh()}
+            refreshing={isRefreshing}
+            tintColor={colors.primaryDeep}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroCopyBlock}>

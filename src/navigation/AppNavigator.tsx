@@ -8,6 +8,7 @@ import { EventCheckInScreen } from '../screens/EventCheckInScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { InviteMembersScreen } from '../screens/InviteMembersScreen';
+import { JoinEventScreen } from '../screens/JoinEventScreen';
 import { LoadingScreen } from '../screens/LoadingScreen';
 import { MyEventsScreen } from '../screens/MyEventsScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   EventCheckIn: { eventId: string };
   EventDetail: { eventId: string };
   InviteMembers: { eventId: string };
+  JoinEvent: { token: string };
   Onboarding: undefined;
   Verification: undefined;
   PendingReview: undefined;
@@ -83,6 +85,11 @@ export function AppNavigator() {
           <Stack.Screen
             component={InviteMembersScreen}
             name="InviteMembers"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            component={JoinEventScreen}
+            name="JoinEvent"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen

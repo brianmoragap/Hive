@@ -175,6 +175,9 @@ export interface AppCopy {
     joinSuccessBody: string;
     joinSuccessTitle: string;
     joinAction: string;
+    joinLinkSearching: string;
+    joinLinkNotFoundTitle: string;
+    joinLinkNotFoundBody: string;
     kicker: string;
     manageAction: string;
     menuBody: string;
@@ -190,6 +193,10 @@ export interface AppCopy {
     notificationsUpdatedPrefix: string;
     notificationsAudienceSuffix: string;
     notificationsTitle: string;
+    notificationsCancelledReceived: string;
+    notificationsCompletedReceived: string;
+    notificationsInvitedReceived: string;
+    notificationsUpdatedReceived: string;
     openAction: string;
     sampleEvents: EventPreview[];
     searchPlaceholder: string;
@@ -293,7 +300,6 @@ export interface AppCopy {
     routeNote: string;
     spotsLabel: string;
     startLabel: string;
-    verifiedOnly: string;
     visibilityLabel: string;
   };
   createEvent: {
@@ -327,8 +333,6 @@ export interface AppCopy {
     typeLabel: string;
     updateSuccessBody: string;
     updateSuccessTitle: string;
-    verifiedOnlyCopy: string;
-    verifiedOnlyLabel: string;
     visibilityLabel: string;
     visibilityPrivate: string;
     visibilityPublic: string;
@@ -367,7 +371,6 @@ export interface AppCopy {
     shareCopied: string;
     shareFailed: string;
     title: string;
-    verifiedOnlyBadge: string;
   };
   inviteMembers: {
     copy: string;
@@ -651,6 +654,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
         'La salida quedó agregada a tu pestaña Actividad. Tu pase QR ya está listo dentro del detalle.',
       joinSuccessTitle: 'Te uniste a la salida',
       joinAction: 'Unirme',
+      joinLinkSearching: 'Buscando la salida...',
+      joinLinkNotFoundTitle: 'No encontramos esa salida',
+      joinLinkNotFoundBody:
+        'El link puede haber vencido, o la salida es privada y todavía no te invitan.',
       kicker: 'Cuenta verificada',
       manageAction: 'Gestionar',
       menuBody: 'Desde aquí puedes revisar tu cuenta o cerrar tu sesión actual.',
@@ -666,6 +673,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       notificationsUpdatedPrefix: 'Cambios enviados a',
       notificationsAudienceSuffix: 'integrantes',
       notificationsTitle: 'Notificaciones',
+      notificationsCancelledReceived: 'Cancelaron un evento en el que participabas · {event}',
+      notificationsCompletedReceived: 'Un evento terminó, ya puedes calificarlo · {event}',
+      notificationsInvitedReceived: 'Te sumaron a un evento · {event}',
+      notificationsUpdatedReceived: 'Un evento en el que participas cambió de detalles · {event}',
       openAction: 'Ver',
       sampleEvents: [
         {
@@ -838,7 +849,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       routeNote: 'Ajusta meeting point, visibilidad y cupos desde la creación del evento.',
       spotsLabel: 'cupos disponibles',
       startLabel: 'Comienza a las',
-      verifiedOnly: 'Solo verificadas',
       visibilityLabel: 'Visibilidad',
     },
     createEvent: {
@@ -877,8 +887,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       updateSuccessBody:
         'Guardamos los cambios y, si ya había asistentes, Hive les envió una notificación.',
       updateSuccessTitle: 'Cambios guardados',
-      verifiedOnlyCopy: 'Mantén la salida visible solo para mujeres verificadas.',
-      verifiedOnlyLabel: 'Solo verificadas',
       visibilityLabel: 'Visibilidad',
       visibilityPrivate: 'Privado',
       visibilityPublic: 'Público',
@@ -920,7 +928,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       shareCopied: 'Abrimos el panel para compartir el enlace privado de tu evento.',
       shareFailed: 'No pudimos abrir el panel para compartir el enlace.',
       title: 'Mis eventos',
-      verifiedOnlyBadge: 'Solo verificadas',
     },
     inviteMembers: {
       copy:
@@ -1201,6 +1208,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
         'The outing was added to your Activity tab. Your QR pass is now ready inside the detail view.',
       joinSuccessTitle: 'You joined the outing',
       joinAction: 'Join',
+      joinLinkSearching: 'Looking for the outing...',
+      joinLinkNotFoundTitle: "We couldn't find that outing",
+      joinLinkNotFoundBody:
+        "The link may have expired, or it's a private outing you haven't been invited to yet.",
       kicker: 'Verified account',
       manageAction: 'Manage',
       menuBody: 'From here you can review your account or close the current session.',
@@ -1216,6 +1227,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       notificationsUpdatedPrefix: 'Changes sent to',
       notificationsAudienceSuffix: 'members',
       notificationsTitle: 'Notifications',
+      notificationsCancelledReceived: 'An event you joined was cancelled · {event}',
+      notificationsCompletedReceived: 'An event wrapped up — you can rate it now · {event}',
+      notificationsInvitedReceived: 'You were added to an event · {event}',
+      notificationsUpdatedReceived: "An event you're in changed its details · {event}",
       openAction: 'View',
       sampleEvents: [
         {
@@ -1387,7 +1402,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       routeNote: 'Adjust meeting point, visibility, and spots from event creation.',
       spotsLabel: 'spots available',
       startLabel: 'Starts at',
-      verifiedOnly: 'Verified only',
       visibilityLabel: 'Visibility',
     },
     createEvent: {
@@ -1426,8 +1440,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       updateSuccessBody:
         'We saved the changes and Hive notified current attendees when needed.',
       updateSuccessTitle: 'Changes saved',
-      verifiedOnlyCopy: 'Keep this outing visible only to verified women.',
-      verifiedOnlyLabel: 'Verified only',
       visibilityLabel: 'Visibility',
       visibilityPrivate: 'Private',
       visibilityPublic: 'Public',
@@ -1469,7 +1481,6 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       shareCopied: 'We opened the share sheet with the private link for your event.',
       shareFailed: 'We could not open the share sheet for the event link.',
       title: 'My events',
-      verifiedOnlyBadge: 'Verified only',
     },
     inviteMembers: {
       copy:
