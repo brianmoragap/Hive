@@ -30,6 +30,8 @@ export interface SupabaseEventRow {
   completed_at: string | null;
   created_at: string;
   id: string;
+  lat: number | null;
+  lng: number | null;
   location_name: string | null;
   max_participants: number | null;
   meeting_point: string | null;
@@ -236,6 +238,8 @@ export function hydrateRemoteEvents(input: {
         date: schedule.date,
         time: schedule.time,
         meetingPoint: row.meeting_point?.trim() || row.location_name?.trim() || '',
+        lat: row.lat ?? null,
+        lng: row.lng ?? null,
         participantLimit: row.max_participants ?? 12,
         visibility: row.visibility,
         creatorId: row.organizer_id,

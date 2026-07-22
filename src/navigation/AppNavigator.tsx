@@ -4,6 +4,7 @@ import { useSession } from '../providers/SessionProvider';
 import { ActivityScreen } from '../screens/ActivityScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
+import { EventChatScreen } from '../screens/EventChatScreen';
 import { EventCheckInScreen } from '../screens/EventCheckInScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   Activity: undefined;
   Auth: undefined;
   CreateEvent: { eventId?: string; prefillSport?: SportType } | undefined;
+  EventChat: { eventId: string };
   EventCheckIn: { eventId: string };
   EventDetail: { eventId: string };
   InviteMembers: { eventId: string };
@@ -75,6 +77,11 @@ export function AppNavigator() {
           <Stack.Screen
             component={EventDetailScreen}
             name="EventDetail"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            component={EventChatScreen}
+            name="EventChat"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen

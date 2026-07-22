@@ -22,6 +22,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AccountMenuSheet } from '../components/AccountMenuSheet';
 import { AppFooterTabs, APP_FOOTER_HEIGHT } from '../components/AppFooterTabs';
 import { AppHeader } from '../components/AppHeader';
+import { LocationPicker } from '../components/LocationPicker';
+import { DEFAULT_LOCATION, type LatLng } from '../components/locationPickerHtml';
 import { ScreenFrame } from '../components/ScreenFrame';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useEvents } from '../providers/EventsProvider';
@@ -31,7 +33,6 @@ import { useSession } from '../providers/SessionProvider';
 import {
   colors,
   createEventHeroImage,
-  createEventMapImage,
   radii,
   shadows,
   spacing,
@@ -99,6 +100,23 @@ export function CreateEventScreen() {
   const existingEvent = route.params?.eventId ? getEventById(route.params.eventId) : null;
   const isEditing = Boolean(existingEvent);
 
+  // Spots can be raised freely, but never below the women already joined plus
+  // the organizer herself. The database enforces the same floor.
+  const minParticipantLimit = existingEvent
+    ? Math.max(existingEvent.attendeeIds.length + 1, 2)
+    : 2;
+
+  // Lock the map's initial center on first render so moving the pin never reloads the map.
+  const initialCenterRef = useRef<LatLng | null>(null);
+  if (!initialCenterRef.current) {
+    initialCenterRef.current =
+      existingEvent?.lat != null && existingEvent?.lng != null
+        ? { latitude: existingEvent.lat, longitude: existingEvent.lng }
+        : DEFAULT_LOCATION;
+  }
+  const initialCenter = initialCenterRef.current;
+  const [coords, setCoords] = useState<LatLng>(initialCenter);
+
   useEffect(() => {
     Animated.stagger(
       75,
@@ -121,6 +139,9 @@ export function CreateEventScreen() {
       setDate(existingEvent.date);
       setTime(existingEvent.time);
       setMeetingPoint(existingEvent.meetingPoint);
+      if (existingEvent.lat != null && existingEvent.lng != null) {
+        setCoords({ latitude: existingEvent.lat, longitude: existingEvent.lng });
+      }
       setParticipantLimit(existingEvent.participantLimit);
       setVisibility(existingEvent.visibility);
       return;
@@ -201,38 +222,53 @@ export function CreateEventScreen() {
       date,
       time,
       meetingPoint: meetingPoint.trim(),
+      lat: coords.latitude,
+      lng: coords.longitude,
       participantLimit,
       visibility,
     };
 
     setError(null);
 
-    if (existingEvent) {
-      await updateEvent(existingEvent.id, payload);
-      Alert.alert(copy.createEvent.updateSuccessTitle, copy.createEvent.updateSuccessBody, [
+    try {
+      if (existingEvent) {
+        await updateEvent(existingEvent.id, payload);
+        Alert.alert(copy.createEvent.updateSuccessTitle, copy.createEvent.updateSuccessBody, [
+          {
+            text: copy.myEvents.title,
+            onPress: () =>
+              navigation.replace('MyEvents', {
+                focusEventId: existingEvent.id,
+                freshAction: 'updated',
+              }),
+          },
+        ]);
+        return;
+      }
+
+      const newEvent = await createEvent(payload);
+      Alert.alert(copy.createEvent.successTitle, copy.createEvent.successBody, [
         {
           text: copy.myEvents.title,
           onPress: () =>
             navigation.replace('MyEvents', {
-              focusEventId: existingEvent.id,
-              freshAction: 'updated',
+              focusEventId: newEvent.id,
+              freshAction: 'created',
             }),
         },
       ]);
-      return;
-    }
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : '';
+      // The database refuses a limit below the women already joined and reports
+      // the floor it will accept, e.g. "CAPACITY_BELOW_JOINED:4".
+      const floor = /CAPACITY_BELOW_JOINED:(\d+)/.exec(message)?.[1];
 
-    const newEvent = await createEvent(payload);
-    Alert.alert(copy.createEvent.successTitle, copy.createEvent.successBody, [
-      {
-        text: copy.myEvents.title,
-        onPress: () =>
-          navigation.replace('MyEvents', {
-            focusEventId: newEvent.id,
-            freshAction: 'created',
-          }),
-      },
-    ]);
+      setError(
+        floor
+          ? copy.createEvent.limitBelowJoinedError.replace('{min}', floor)
+          : message || copy.createEvent.missingFields,
+      );
+    }
   };
 
   return (
@@ -424,22 +460,29 @@ export function CreateEventScreen() {
               </View>
             </View>
 
-            <ImageBackground
-              imageStyle={styles.mapImage}
-              source={{ uri: createEventMapImage }}
-              style={styles.mapCard}
-            >
-              <View style={[styles.mapPin, { backgroundColor: theme.colors.primary }]}>
-                <Feather color={theme.colors.white} name="map-pin" size={18} />
-              </View>
+            <View style={styles.mapCard}>
+              <LocationPicker
+                initialLatitude={initialCenter.latitude}
+                initialLongitude={initialCenter.longitude}
+                onChange={setCoords}
+                height={200}
+                borderRadius={28}
+                backgroundColor={theme.colors.inputBackground}
+              />
               {meetingPoint.trim() ? (
-                <View style={[styles.mapLabel, { backgroundColor: theme.colors.surfaceStrong }]}>
+                <View
+                  pointerEvents="none"
+                  style={[styles.mapLabel, { backgroundColor: theme.colors.surfaceStrong }]}
+                >
                   <Text numberOfLines={1} style={[styles.mapLabelText, { color: theme.colors.text }]}>
                     {meetingPoint}
                   </Text>
                 </View>
               ) : null}
-            </ImageBackground>
+            </View>
+            <Text style={[styles.mapHint, { color: theme.colors.textMuted }]}>
+              {copy.createEvent.mapPickerHint}
+            </Text>
 
             <View style={styles.participantsRow}>
               <View style={styles.participantsCopy}>
@@ -447,15 +490,23 @@ export function CreateEventScreen() {
                   {copy.createEvent.limitParticipantsTitle}
                 </Text>
                 <Text style={[styles.participantsDescription, { color: theme.colors.textMuted }]}>
-                  {copy.createEvent.limitParticipantsCopy}
+                  {isEditing && minParticipantLimit > 2
+                    ? copy.createEvent.limitParticipantsFloor
+                        .replace('{joined}', String(existingEvent?.attendeeIds.length ?? 0))
+                        .replace('{min}', String(minParticipantLimit))
+                    : copy.createEvent.limitParticipantsCopy}
                 </Text>
               </View>
 
               <View style={[styles.stepper, { backgroundColor: theme.colors.surface }]}>
                 <StepperButton
-                  disabled={participantLimit <= 2}
+                  disabled={participantLimit <= minParticipantLimit}
                   iconName="minus"
-                  onPress={() => setParticipantLimit((current) => Math.max(current - 1, 2))}
+                  onPress={() =>
+                    setParticipantLimit((current) =>
+                      Math.max(current - 1, minParticipantLimit),
+                    )
+                  }
                 />
                 <Text style={[styles.stepperValue, { color: theme.colors.text }]}>
                   {participantLimit}
@@ -806,14 +857,15 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   mapCard: {
-    minHeight: 152,
     borderRadius: 28,
     overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  mapImage: {
-    borderRadius: 28,
+  mapHint: {
+    marginTop: spacing.xs,
+    marginLeft: spacing.xs,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    fontSize: 12,
+    lineHeight: 16,
   },
   mapPin: {
     width: 46,

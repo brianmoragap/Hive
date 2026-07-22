@@ -27,8 +27,14 @@ import { useLocale } from '../providers/LocaleProvider';
 import { useAppTheme } from '../providers/ThemeProvider';
 import { useSession } from '../providers/SessionProvider';
 import { colors, radii, shadows, spacing } from '../theme/tokens';
-import type { AppTab, EventActivityType, EventRecord } from '../types/domain';
+import type {
+  AppTab,
+  EventActivityType,
+  EventAttendancePass,
+  EventRecord,
+} from '../types/domain';
 import { handleAppTabPress } from '../utils/appNavigation';
+import { formatManualPassCode } from '../utils/eventPasses';
 import {
   formatActivityLogLine,
   formatAttendanceSummary,
@@ -43,11 +49,14 @@ type MyEventsRoute = RouteProp<RootStackParamList, 'MyEvents'>;
 export function MyEventsScreen() {
   const { copy } = useLocale();
   const { theme } = useAppTheme();
-  const { signOut } = useSession();
+  const { signOut, user } = useSession();
   const {
     buildShareLink,
     cancelEvent,
     completeEvent,
+    getAttendancePass,
+    joinedEvents,
+    leaveEvent,
     markAllNotificationsRead,
     myEvents,
     notifications,
@@ -110,6 +119,13 @@ export function MyEventsScreen() {
 
   const activeEvents = myEvents.filter((event) => event.status === 'scheduled');
   const privateEvents = myEvents.filter((event) => event.visibility === 'private');
+
+  // `joinedEvents` also contains the ones she organizes, so drop those: this
+  // section is only about the outings where she is an attendee, not the host.
+  const attendingEvents = useMemo(
+    () => joinedEvents.filter((event) => event.creatorId !== user?.id),
+    [joinedEvents, user?.id],
+  );
 
   const getEntranceStyle = (index: number, offsetY: number) => ({
     opacity: entranceAnims[index],
@@ -187,6 +203,24 @@ export function MyEventsScreen() {
     ]);
   };
 
+  const handleLeave = (event: EventRecord) => {
+    Alert.alert(copy.eventDetail.leaveConfirmTitle, copy.eventDetail.leaveConfirmBody, [
+      {
+        style: 'cancel',
+        text: copy.common.cancel,
+      },
+      {
+        style: 'destructive',
+        text: copy.eventDetail.leaveAction,
+        onPress: () => {
+          void leaveEvent(event.id).then(() => {
+            Alert.alert(copy.myEvents.leaveSuccessTitle, copy.myEvents.leaveSuccessBody);
+          });
+        },
+      },
+    ]);
+  };
+
   return (
     <ScreenFrame contentStyle={styles.safeArea}>
       <StatusBar style={theme.statusBarStyle} />
@@ -227,7 +261,52 @@ export function MyEventsScreen() {
             </Animated.View>
           ) : null}
 
-          <Animated.View style={[styles.metricsRow, getEntranceStyle(2, 30)]}>
+          <Animated.View style={[styles.sectionHeader, getEntranceStyle(2, 26)]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {copy.myEvents.attendingTitle}
+            </Text>
+            <Text style={[styles.sectionCopy, { color: theme.colors.textMuted }]}>
+              {copy.myEvents.attendingCopy}
+            </Text>
+          </Animated.View>
+
+          {attendingEvents.length === 0 ? (
+            <Animated.View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: theme.colors.surfaceStrong },
+                getEntranceStyle(2, 30),
+              ]}
+            >
+              <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
+                {copy.myEvents.attendingEmptyTitle}
+              </Text>
+              <Text style={[styles.emptyCopy, { color: theme.colors.textMuted }]}>
+                {copy.myEvents.attendingEmptyCopy}
+              </Text>
+            </Animated.View>
+          ) : (
+            <Animated.View style={[styles.cardsColumn, getEntranceStyle(2, 30)]}>
+              {attendingEvents.map((event) => (
+                <AttendingEventCard
+                  key={event.id}
+                  event={event}
+                  onLeave={() => handleLeave(event)}
+                  onOpenChat={() => navigation.navigate('EventChat', { eventId: event.id })}
+                  onView={() => navigation.navigate('EventDetail', { eventId: event.id })}
+                  pass={user ? getAttendancePass(event.id, user.id) : null}
+                />
+              ))}
+            </Animated.View>
+          )}
+
+          <Animated.View style={[styles.sectionHeader, getEntranceStyle(3, 32)]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {copy.myEvents.hostingTitle}
+            </Text>
+          </Animated.View>
+
+          <Animated.View style={[styles.metricsRow, getEntranceStyle(3, 30)]}>
             <MetricCard value={String(myEvents.length)} label={copy.profile.eventsCreatedStat} />
             <MetricCard value={String(privateEvents.length)} label={copy.profile.privateEventsStat} />
             <MetricCard value={String(activeEvents.length)} label={copy.profile.upcomingStat} />
@@ -310,6 +389,119 @@ function MetricCard({ label, value }: { label: string; value: string }) {
     <View style={[styles.metricCard, { backgroundColor: theme.colors.surfaceMuted, borderColor: theme.colors.panelBorder }]}>
       <Text style={[styles.metricValue, { color: theme.colors.text }]}>{value}</Text>
       <Text style={[styles.metricLabel, { color: theme.colors.textSoft }]}>{label}</Text>
+    </View>
+  );
+}
+
+/**
+ * What an attendee sees for an outing someone else organizes: her own pass, and
+ * only the actions she owns. No editing, no scanning, no completing.
+ */
+function AttendingEventCard({
+  event,
+  onLeave,
+  onOpenChat,
+  onView,
+  pass,
+}: {
+  event: EventRecord;
+  onLeave: () => void;
+  onOpenChat: () => void;
+  onView: () => void;
+  pass: EventAttendancePass | null;
+}) {
+  const { theme } = useAppTheme();
+  const { copy } = useLocale();
+  const isCheckedIn = Boolean(pass?.checkedInAt);
+  const isOver = event.status !== 'scheduled';
+
+  return (
+    <View style={[styles.eventCard, { backgroundColor: theme.colors.surfaceStrong }]}>
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardTitleBlock}>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{event.title}</Text>
+          <Text style={[styles.cardMeta, { color: theme.colors.textSoft }]}>
+            {formatEventSchedule(event)} · {event.meetingPoint}
+          </Text>
+          <Text style={[styles.cardMeta, { color: theme.colors.textSoft }]}>
+            {copy.home.eventOrganizerPrefix} {event.creatorName}
+          </Text>
+        </View>
+
+        <View style={styles.badgesColumn}>
+          <Badge
+            label={
+              event.status === 'cancelled'
+                ? copy.myEvents.cancelledBadge
+                : event.status === 'completed'
+                  ? copy.myEvents.completedBadge
+                  : copy.myEvents.activeBadge
+            }
+            tone={
+              event.status === 'cancelled'
+                ? 'danger'
+                : event.status === 'completed'
+                  ? 'coral'
+                  : 'neutral'
+            }
+          />
+        </View>
+      </View>
+
+      {pass && !isOver ? (
+        <View style={[styles.passCard, { backgroundColor: theme.colors.surface }]}>
+          <View style={styles.passCopy}>
+            <Text style={[styles.passLabel, { color: theme.colors.textSoft }]}>
+              {copy.myEvents.passCodeLabel}
+            </Text>
+            <Text style={[styles.passCode, { color: theme.colors.text }]}>
+              {formatManualPassCode(pass.manualCode)}
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.passStatus,
+              {
+                backgroundColor: isCheckedIn ? theme.colors.mint : theme.colors.primarySoft,
+              },
+            ]}
+          >
+            <MaterialCommunityIcons
+              color={isCheckedIn ? theme.colors.success : theme.colors.primaryDeep}
+              name={isCheckedIn ? 'check-circle' : 'qrcode'}
+              size={15}
+            />
+            <Text
+              style={[
+                styles.passStatusLabel,
+                { color: isCheckedIn ? theme.colors.success : theme.colors.primaryDeep },
+              ]}
+            >
+              {isCheckedIn
+                ? copy.myEvents.passCheckedInLabel
+                : copy.myEvents.passPendingLabel}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      <View style={styles.actionsWrap}>
+        <ActionButton iconName="eye" label={copy.myEvents.viewEventAction} onPress={onView} />
+        <ActionButton
+          iconName="message-circle"
+          label={copy.eventChat.title}
+          onPress={onOpenChat}
+        />
+        {!isOver ? (
+          <ActionButton
+            destructive
+            iconName="log-out"
+            label={copy.eventDetail.leaveAction}
+            onPress={onLeave}
+          />
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -590,6 +782,60 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: colors.success,
+  },
+  sectionHeader: {
+    gap: 2,
+    marginTop: spacing.xs,
+  },
+  sectionTitle: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 19,
+    letterSpacing: -0.6,
+    color: colors.text,
+  },
+  sectionCopy: {
+    fontFamily: 'PlusJakartaSans_500Medium',
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textMuted,
+  },
+  passCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+  },
+  passCopy: {
+    gap: 2,
+  },
+  passLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: colors.textSoft,
+  },
+  passCode: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 20,
+    letterSpacing: 1,
+    color: colors.text,
+  },
+  passStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  passStatusLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 11,
   },
   metricsRow: {
     flexDirection: 'row',

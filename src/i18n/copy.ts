@@ -222,6 +222,12 @@ export interface AppCopy {
     title: string;
     viewAction: string;
   };
+  eventChat: {
+    title: string;
+    placeholder: string;
+    empty: string;
+    sending: string;
+  };
   eventDetail: {
     accessPrivate: string;
     accessPublic: string;
@@ -293,6 +299,10 @@ export interface AppCopy {
     scanResultMismatchTitle: string;
     scanResultMissingBody: string;
     scanResultMissingTitle: string;
+    scanResultFullBody: string;
+    scanResultFullTitle: string;
+    scanResultRevokedBody: string;
+    scanResultRevokedTitle: string;
     scanTitle: string;
     scanValidateAction: string;
     scannerFallback: string;
@@ -312,8 +322,11 @@ export interface AppCopy {
     heroTitle: string;
     limitParticipantsCopy: string;
     limitParticipantsTitle: string;
+    limitParticipantsFloor: string;
+    limitBelowJoinedError: string;
     meetingPointLabel: string;
     meetingPointPlaceholder: string;
+    mapPickerHint: string;
     missingFields: string;
     privateAfterCreate: string;
     privateVisibilityCopy: string;
@@ -340,6 +353,17 @@ export interface AppCopy {
   myEvents: {
     activeBadge: string;
     attendeesLabel: string;
+    attendingTitle: string;
+    attendingCopy: string;
+    attendingEmptyTitle: string;
+    attendingEmptyCopy: string;
+    hostingTitle: string;
+    passCodeLabel: string;
+    passPendingLabel: string;
+    passCheckedInLabel: string;
+    viewEventAction: string;
+    leaveSuccessTitle: string;
+    leaveSuccessBody: string;
     cancelAction: string;
     cancelConfirmBody: string;
     cancelConfirmTitle: string;
@@ -757,6 +781,12 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       title: 'Actividad',
       viewAction: 'Ver',
     },
+    eventChat: {
+      title: 'Chat del evento',
+      placeholder: 'Escribe un mensaje…',
+      empty: 'Aún no hay mensajes. ¡Rompe el hielo con tu grupo! 👋',
+      sending: 'Enviando…',
+    },
     eventDetail: {
       accessPrivate: 'Privado',
       accessPublic: 'Público',
@@ -768,7 +798,7 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       chatLockedCta: 'Unirme para desbloquear chat',
       chatLockedTitle: 'Vista previa del chat',
       chatOpenBody: 'Ya estás dentro. El siguiente paso es conectar el chat grupal real.',
-      chatOpenTitle: 'Chat del grupo disponible',
+      chatOpenTitle: 'Abrir chat del grupo',
       checkedInLabel: 'Ingresaron',
       confirmedLeaveBody: 'Saliste de la salida y ya no aparecerá en tu pestaña Actividad.',
       confirmedLeaveTitle: 'Saliste del evento',
@@ -841,6 +871,12 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       scanResultMismatchTitle: 'QR de otro evento',
       scanResultMissingBody: 'No encontramos este evento para validar la asistencia.',
       scanResultMissingTitle: 'Evento no disponible',
+      scanResultFullBody:
+        'Ya validaste todos los cupos de esta salida. No puedes registrar más asistentes.',
+      scanResultFullTitle: 'Aforo completo',
+      scanResultRevokedBody:
+        'Esta invitada salió del evento, así que su pase quedó anulado.',
+      scanResultRevokedTitle: 'Pase anulado',
       scanTitle: 'Escanear asistencia',
       scanValidateAction: 'Validar código',
       scannerFallback:
@@ -862,8 +898,13 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       heroTitle: 'Crear salida',
       limitParticipantsCopy: 'Define el tamaño máximo del grupo antes de publicar.',
       limitParticipantsTitle: 'Límite de participantes',
+      limitParticipantsFloor:
+        'Ya hay {joined} inscritas, así que el mínimo es {min} cupos (te incluye a ti).',
+      limitBelowJoinedError:
+        'No puedes dejar menos de {min} cupos: ya hay inscritas ocupando ese espacio. Primero sácalas del evento.',
       meetingPointLabel: 'Punto de encuentro',
       meetingPointPlaceholder: 'Busca o escribe una ubicación segura',
+      mapPickerHint: 'Toca el mapa o arrastra el pin para marcar el punto exacto.',
       missingFields: 'Completa título, fecha, hora y punto de encuentro antes de crear la salida.',
       privateAfterCreate:
         'Si la salida es privada, después podrás compartirla por enlace o invitar integrantes Hive desde Mis eventos.',
@@ -894,6 +935,17 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
     myEvents: {
       activeBadge: 'Activo',
       attendeesLabel: 'Asistentes',
+      attendingTitle: 'Voy a ir',
+      attendingCopy: 'Salidas de otras anfitrionas donde ya tienes tu cupo.',
+      attendingEmptyTitle: 'Aún no te unes a ninguna salida',
+      attendingEmptyCopy: 'Explora el inicio y únete a una salida para recibir tu pase de acceso.',
+      hostingTitle: 'Yo organizo',
+      passCodeLabel: 'Tu código',
+      passPendingLabel: 'Pendiente de validar',
+      passCheckedInLabel: 'Asistencia validada',
+      viewEventAction: 'Ver evento',
+      leaveSuccessTitle: 'Saliste de la salida',
+      leaveSuccessBody: 'Tu cupo quedó disponible y tu pase dejó de ser válido.',
       cancelAction: 'Cancelar evento',
       cancelConfirmBody:
         'La salida quedará marcada como cancelada y Hive avisará a todas las asistentes actuales.',
@@ -1311,6 +1363,12 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       title: 'Activity',
       viewAction: 'View',
     },
+    eventChat: {
+      title: 'Event chat',
+      placeholder: 'Write a message…',
+      empty: 'No messages yet. Break the ice with your group! 👋',
+      sending: 'Sending…',
+    },
     eventDetail: {
       accessPrivate: 'Private',
       accessPublic: 'Public',
@@ -1322,7 +1380,7 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       chatLockedCta: 'Join to unlock chat',
       chatLockedTitle: 'Chat preview',
       chatOpenBody: 'You are already in. The next step is wiring the real group chat.',
-      chatOpenTitle: 'Group chat available',
+      chatOpenTitle: 'Open group chat',
       checkedInLabel: 'Checked in',
       confirmedLeaveBody: 'You left the outing and it will no longer appear in your Activity tab.',
       confirmedLeaveTitle: 'You left the event',
@@ -1394,6 +1452,11 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       scanResultMismatchTitle: 'QR from another event',
       scanResultMissingBody: 'We could not find this event to validate attendance.',
       scanResultMissingTitle: 'Event unavailable',
+      scanResultFullBody:
+        'Every spot for this outing is already validated. You cannot register more attendees.',
+      scanResultFullTitle: 'Capacity reached',
+      scanResultRevokedBody: 'This attendee left the event, so her pass was invalidated.',
+      scanResultRevokedTitle: 'Pass invalidated',
       scanTitle: 'Scan attendance',
       scanValidateAction: 'Validate code',
       scannerFallback:
@@ -1415,8 +1478,13 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       heroTitle: 'Create outing',
       limitParticipantsCopy: 'Set the maximum group size before publishing.',
       limitParticipantsTitle: 'Limit participants',
+      limitParticipantsFloor:
+        '{joined} women already joined, so the minimum is {min} spots (you included).',
+      limitBelowJoinedError:
+        'You cannot go below {min} spots: attendees are already taking them. Remove them from the event first.',
       meetingPointLabel: 'Meeting point',
       meetingPointPlaceholder: 'Search or type a safe location',
+      mapPickerHint: 'Tap the map or drag the pin to drop the exact spot.',
       missingFields: 'Complete title, date, time, and meeting point before creating the outing.',
       privateAfterCreate:
         'If the outing is private, you can share it by link or invite Hive members from My events right after creation.',
@@ -1447,6 +1515,17 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
     myEvents: {
       activeBadge: 'Active',
       attendeesLabel: 'Attendees',
+      attendingTitle: "I'm going",
+      attendingCopy: 'Outings hosted by others where you already have a spot.',
+      attendingEmptyTitle: 'You have not joined any outing yet',
+      attendingEmptyCopy: 'Browse home and join an outing to get your access pass.',
+      hostingTitle: 'I host',
+      passCodeLabel: 'Your code',
+      passPendingLabel: 'Pending validation',
+      passCheckedInLabel: 'Attendance validated',
+      viewEventAction: 'View event',
+      leaveSuccessTitle: 'You left the outing',
+      leaveSuccessBody: 'Your spot is available again and your pass is no longer valid.',
       cancelAction: 'Cancel event',
       cancelConfirmBody:
         'This outing will be marked as cancelled and Hive will notify all current attendees.',

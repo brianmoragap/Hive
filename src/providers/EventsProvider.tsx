@@ -69,15 +69,20 @@ interface SubmitEventReviewResult {
 
 interface ScanAttendanceResult {
   attendeeId?: string;
+  capacity?: number;
+  checkedInCount?: number;
   event?: EventRecord;
   status:
     | 'already_checked_in'
     | 'cancelled'
     | 'checked_in'
+    | 'completed'
     | 'event_mismatch'
+    | 'full'
     | 'invalid'
     | 'not_found'
-    | 'not_host';
+    | 'not_host'
+    | 'revoked';
 }
 
 interface EventsContextValue {
@@ -358,7 +363,14 @@ function clampRating(value: number) {
   return Math.max(1, Math.min(5, Math.round(value)));
 }
 
-function normalizeAttendancePasses(event: EventRecord) {
+/**
+ * Cleans up the passes attached to an event.
+ *
+ * `issueMissing` must stay false for remote data: there the passes are issued by
+ * a database trigger, so inventing one locally would hand the attendee a QR with
+ * a token the server has never seen and the host could never burn.
+ */
+function normalizeAttendancePasses(event: EventRecord, issueMissing = true) {
   const attendeeIds = Array.from(new Set(event.attendeeIds));
   const rawPasses = Array.isArray(event.attendancePasses) ? event.attendancePasses : [];
   const usedCodes = new Set<string>();
@@ -389,13 +401,17 @@ function normalizeAttendancePasses(event: EventRecord) {
     });
   });
 
-  attendeeIds.forEach((attendeeId) => {
-    const hasActivePass = nextPasses.some((pass) => pass.userId === attendeeId && !pass.revokedAt);
+  if (issueMissing) {
+    attendeeIds.forEach((attendeeId) => {
+      const hasActivePass = nextPasses.some((pass) => pass.userId === attendeeId && !pass.revokedAt);
 
-    if (!hasActivePass) {
-      nextPasses.push(createAttendancePass(attendeeId, event.updatedAt || event.createdAt, usedCodes));
-    }
-  });
+      if (!hasActivePass) {
+        nextPasses.push(
+          createAttendancePass(attendeeId, event.updatedAt || event.createdAt, usedCodes),
+        );
+      }
+    });
+  }
 
   return {
     ...event,
@@ -547,7 +563,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       supabase
         .from('events')
         .select(
-          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
+          'id, title, sport, skill_level, starts_at, location_name, meeting_point, lat, lng, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
         )
         .order('updated_at', { ascending: false }),
       supabase
@@ -601,7 +617,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
         passRows: (passResult.data ?? []) as SupabaseAttendancePassRow[],
         participantRows: (participantResult.data ?? []) as SupabaseEventParticipantRow[],
         reviewRows: (reviewResult.data ?? []) as SupabaseEventReviewRow[],
-      }).map((event) => normalizeAttendancePasses(event)),
+      }).map((event) => normalizeAttendancePasses(event, false)),
       members: mergedMembers,
       notifications: (notificationResult.data ?? [])
         .map((row) => mapNotificationRow(row as SupabaseNotificationRow))
@@ -776,13 +792,15 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           starts_at: startsAt,
           location_name: payload.meetingPoint,
           meeting_point: payload.meetingPoint,
+          lat: payload.lat ?? null,
+          lng: payload.lng ?? null,
           organizer_id: user.id,
           visibility: payload.visibility,
           status: 'scheduled',
           max_participants: payload.participantLimit,
         })
         .select(
-          'id, title, sport, skill_level, starts_at, location_name, meeting_point, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
+          'id, title, sport, skill_level, starts_at, location_name, meeting_point, lat, lng, organizer_id, visibility, status, share_slug, max_participants, completed_at, cancellation_reason, created_at, updated_at',
         )
         .single();
 
@@ -799,6 +817,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           participantRows: [],
           reviewRows: [],
         })[0],
+        false,
       );
 
       const { error: logError } = await supabase.from('event_activity_logs').insert({
@@ -864,6 +883,8 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           starts_at: startsAt,
           location_name: payload.meetingPoint,
           meeting_point: payload.meetingPoint,
+          lat: payload.lat ?? null,
+          lng: payload.lng ?? null,
           visibility: payload.visibility,
           max_participants: payload.participantLimit,
         })
@@ -1137,7 +1158,6 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
       if (acceptedInvites.length > 0) {
         const issuedAt = new Date().toISOString();
-        const usedCodes = new Set(targetEvent.attendancePasses.map((pass) => pass.manualCode));
 
         const { error: participantError } = await supabase.from('event_participants').upsert(
           acceptedInvites.map((memberId) => ({
@@ -1153,27 +1173,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
           throw participantError;
         }
 
-        const { error: passError } = await supabase.from('event_attendance_passes').upsert(
-          acceptedInvites.map((memberId) => {
-            const pass = createAttendancePass(memberId, issuedAt, usedCodes);
-
-            return {
-              event_id: eventId,
-              user_id: memberId,
-              pass_token: pass.token,
-              manual_code: pass.manualCode,
-              issued_at: pass.issuedAt,
-              revoked_at: null,
-              checked_in_at: null,
-              checked_in_by: null,
-            };
-          }),
-          { onConflict: 'event_id,user_id' },
-        );
-
-        if (passError) {
-          throw passError;
-        }
+        // Passes for the accepted invites are issued by the database trigger.
 
         const { error: inviteError } = await supabase.from('event_invites').insert(
           acceptedInvites.map((memberId) => ({
@@ -1322,9 +1322,9 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
     if (backendMode === 'remote' && supabase) {
       const issuedAt = new Date().toISOString();
-      const usedCodes = new Set(targetEvent.attendancePasses.map((pass) => pass.manualCode));
-      const nextPass = createAttendancePass(user.id, issuedAt, usedCodes);
 
+      // The attendance pass is issued by a database trigger, and capacity is
+      // enforced there too (the insert raises EVENT_FULL when the spots run out).
       const { error: participantError } = await supabase.from('event_participants').upsert(
         {
           event_id: eventId,
@@ -1336,25 +1336,14 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (participantError) {
+        if (participantError.message?.includes('EVENT_FULL')) {
+          return {
+            event: targetEvent,
+            status: 'full' as const,
+          };
+        }
+
         throw participantError;
-      }
-
-      const { error: passError } = await supabase.from('event_attendance_passes').upsert(
-        {
-          event_id: eventId,
-          user_id: user.id,
-          pass_token: nextPass.token,
-          manual_code: nextPass.manualCode,
-          issued_at: nextPass.issuedAt,
-          revoked_at: null,
-          checked_in_at: null,
-          checked_in_by: null,
-        },
-        { onConflict: 'event_id,user_id' },
-      );
-
-      if (passError) {
-        throw passError;
       }
 
       const snapshot = await refreshRemoteSnapshot();
@@ -1445,19 +1434,8 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
         throw participantError;
       }
 
-      const { error: passError } = await supabase
-        .from('event_attendance_passes')
-        .update({
-          revoked_at: revokedAt,
-        })
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .is('revoked_at', null);
-
-      if (passError) {
-        throw passError;
-      }
-
+      // Leaving revokes the pass through the same database trigger, so an old
+      // screenshot of the QR stops working the moment she drops out.
       const snapshot = await refreshRemoteSnapshot();
       const nextEvent = snapshot.events.find((event) => event.id === eventId) ?? targetEvent;
 
@@ -1678,6 +1656,40 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
+    // Remote mode delegates the whole decision to Postgres: only the organizer
+    // can burn a pass, only once, only for this event and only while there are
+    // spots left. Nothing here is trusted to gate it.
+    if (backendMode === 'remote' && supabase) {
+      const { data, error } = await supabase.rpc('check_in_event_pass', {
+        p_event_id: eventId,
+        p_raw_code: rawCode,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const payload = (data ?? {}) as {
+        attendeeId?: string;
+        capacity?: number;
+        checkedInCount?: number;
+        status?: ScanAttendanceResult['status'];
+      };
+
+      const snapshot =
+        payload.status === 'checked_in' ? await refreshRemoteSnapshot() : null;
+      const nextEvent =
+        snapshot?.events.find((event) => event.id === eventId) ?? targetEvent;
+
+      return {
+        attendeeId: payload.attendeeId,
+        capacity: payload.capacity,
+        checkedInCount: payload.checkedInCount,
+        event: nextEvent,
+        status: payload.status ?? ('invalid' as const),
+      };
+    }
+
     if (targetEvent.creatorId !== user.id) {
       return {
         event: targetEvent,
@@ -1726,30 +1738,6 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
         attendeeId: matchedPass.userId,
         event: targetEvent,
         status: 'already_checked_in' as const,
-      };
-    }
-
-    if (backendMode === 'remote' && supabase) {
-      const checkedInAt = new Date().toISOString();
-      const { error } = await supabase
-        .from('event_attendance_passes')
-        .update({
-          checked_in_at: checkedInAt,
-          checked_in_by: user.id,
-        })
-        .eq('id', matchedPass.id);
-
-      if (error) {
-        throw error;
-      }
-
-      const snapshot = await refreshRemoteSnapshot();
-      const nextEvent = snapshot.events.find((event) => event.id === eventId) ?? targetEvent;
-
-      return {
-        attendeeId: matchedPass.userId,
-        event: nextEvent,
-        status: 'checked_in' as const,
       };
     }
 

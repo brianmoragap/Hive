@@ -531,17 +531,18 @@ export function EventDetailScreen() {
             </ScrollView>
           </View>
 
-          <View style={styles.chatPreviewCard}>
-            <Text style={styles.chatPreviewLabel}>{copy.eventDetail.chatLockedTitle}</Text>
-            <Text style={styles.chatPreviewBody}>
-              {isJoined ? copy.eventDetail.chatOpenBody : copy.eventDetail.chatLockedBody}
-            </Text>
-            <View style={styles.chatPreviewPill}>
-              <Text style={styles.chatPreviewPillLabel}>
-                {isJoined ? copy.eventDetail.chatOpenTitle : copy.eventDetail.chatLockedCta}
-              </Text>
-            </View>
-          </View>
+          {isJoined ? (
+            <Pressable
+              onPress={() => navigation.navigate('EventChat', { eventId: event.id })}
+              style={({ pressed }) => [styles.chatEntryCard, pressed ? styles.pressed : undefined]}
+            >
+              <View style={styles.chatEntryIcon}>
+                <Feather color={colors.primary} name="message-circle" size={18} />
+              </View>
+              <Text style={styles.chatEntryLabel}>{copy.eventDetail.chatOpenTitle}</Text>
+              <Feather color={colors.textMuted} name="chevron-right" size={20} />
+            </Pressable>
+          ) : null}
         </ScrollView>
 
         <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
@@ -1157,39 +1158,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.text,
   },
-  chatPreviewCard: {
+  chatEntryCard: {
     marginHorizontal: spacing.lg,
     borderRadius: 28,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    gap: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
     ...shadows.card,
   },
-  chatPreviewLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-    color: colors.primaryDeep,
-  },
-  chatPreviewBody: {
-    fontFamily: 'PlusJakartaSans_500Medium',
-    fontSize: 14,
-    lineHeight: 21,
-    color: colors.textMuted,
-  },
-  chatPreviewPill: {
-    alignSelf: 'flex-start',
-    marginTop: spacing.xs,
+  chatEntryIcon: {
+    width: 40,
+    height: 40,
     borderRadius: radii.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(255, 244, 244, 0.9)',
   },
-  chatPreviewPillLabel: {
+  chatEntryLabel: {
+    flex: 1,
     fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 13,
-    color: colors.primaryDeep,
+    fontSize: 15,
+    color: colors.text,
   },
   reviewCard: {
     marginHorizontal: spacing.lg,

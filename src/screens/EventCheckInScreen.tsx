@@ -81,16 +81,21 @@ export function EventCheckInScreen() {
   const isHost = user?.id === event.creatorId;
   const checkedInCount = attendeeRows.filter((row) => row.pass.checkedInAt).length;
   const pendingCount = Math.max(attendeeRows.length - checkedInCount, 0);
+  // The participant limit counts the host, so the spots she can validate is one less.
+  const attendeeCapacity = Math.max(event.participantLimit - 1, 0);
 
   const resolveBanner = (
     status:
       | 'already_checked_in'
       | 'cancelled'
       | 'checked_in'
+      | 'completed'
       | 'event_mismatch'
+      | 'full'
       | 'invalid'
       | 'not_found'
-      | 'not_host',
+      | 'not_host'
+      | 'revoked',
     attendeeName?: string,
   ): StatusBannerContent => {
     if (status === 'checked_in') {
@@ -125,6 +130,32 @@ export function EventCheckInScreen() {
       return {
         body: copy.eventDetail.scanResultCancelledBody,
         title: copy.eventDetail.scanResultCancelledTitle,
+        tone: 'danger',
+      };
+    }
+
+    if (status === 'completed') {
+      return {
+        body: copy.myEvents.completeSuccessBody,
+        title: copy.myEvents.completedBadge,
+        tone: 'neutral',
+      };
+    }
+
+    if (status === 'full') {
+      return {
+        body: copy.eventDetail.scanResultFullBody,
+        title: copy.eventDetail.scanResultFullTitle,
+        tone: 'danger',
+      };
+    }
+
+    if (status === 'revoked') {
+      return {
+        body: attendeeName
+          ? `${attendeeName}: ${copy.eventDetail.scanResultRevokedBody}`
+          : copy.eventDetail.scanResultRevokedBody,
+        title: copy.eventDetail.scanResultRevokedTitle,
         tone: 'danger',
       };
     }
@@ -253,7 +284,10 @@ export function EventCheckInScreen() {
           </View>
 
           <View style={styles.metricsRow}>
-            <MetricCard label={copy.eventDetail.checkedInLabel} value={String(checkedInCount)} />
+            <MetricCard
+              label={copy.eventDetail.checkedInLabel}
+              value={`${checkedInCount}/${attendeeCapacity}`}
+            />
             <MetricCard label={copy.eventDetail.pendingLabel} value={String(pendingCount)} />
           </View>
 

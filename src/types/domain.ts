@@ -77,6 +77,8 @@ export interface EventDraftPayload {
   date: string;
   time: string;
   meetingPoint: string;
+  lat?: number | null;
+  lng?: number | null;
   participantLimit: number;
   visibility: EventVisibility;
 }
@@ -165,6 +167,18 @@ export interface EventRecord extends EventDraftPayload {
   activityLog: EventActivityLog[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface EventMessage {
+  id: string;
+  eventId: string;
+  userId: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
+  body: string;
+  createdAt: string;
+  isMine: boolean;
+  pending?: boolean;
 }
 
 export type NotificationPerspective = 'organizer' | 'attendee';
