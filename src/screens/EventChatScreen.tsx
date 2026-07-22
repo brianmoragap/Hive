@@ -27,6 +27,16 @@ import { radii, spacing } from '../theme/tokens';
 type ChatRoute = RouteProp<RootStackParamList, 'EventChat'>;
 type ChatNavigation = NativeStackNavigationProp<RootStackParamList>;
 
+/**
+ * Tap-to-insert emojis. The iOS Simulator cannot receive emojis from the Mac
+ * emoji picker over the hardware keyboard, so without this there is no way to
+ * put one in a message while testing there.
+ */
+const QUICK_EMOJIS = [
+  '🔥', '💪', '🏃‍♀️', '🚴‍♀️', '🥾', '🏋️‍♀️', '🎉', '👏', '💜', '😀',
+  '😅', '🙌', '☀️', '🌧️', '📍', '⏰', '✅', '❌', '😍', '🤙',
+];
+
 function formatTime(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
@@ -47,6 +57,7 @@ export function EventChatScreen() {
   const event = getEventById(route.params.eventId);
   const { messages, loading, sending, error, sendMessage } = useEventChat(route.params.eventId);
   const [draft, setDraft] = useState('');
+  const [emojiBarVisible, setEmojiBarVisible] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -157,12 +168,61 @@ export function EventChatScreen() {
           <Text style={[styles.error, { color: theme.colors.danger }]}>{error}</Text>
         ) : null}
 
+        {emojiBarVisible ? (
+          <View
+            style={[
+              styles.emojiBar,
+              { borderTopColor: theme.colors.panelBorder, backgroundColor: theme.colors.surface },
+            ]}
+          >
+            <ScrollView
+              horizontal
+              contentContainerStyle={styles.emojiBarContent}
+              keyboardShouldPersistTaps="handled"
+              showsHorizontalScrollIndicator={false}
+            >
+              {QUICK_EMOJIS.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  hitSlop={6}
+                  onPress={() => setDraft((current) => current + emoji)}
+                  style={({ pressed }) => [
+                    styles.emojiButton,
+                    { backgroundColor: theme.colors.surfaceStrong },
+                    pressed ? styles.emojiButtonPressed : undefined,
+                  ]}
+                >
+                  <Text style={styles.emojiGlyph}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
+
         <View
           style={[
             styles.inputRow,
             { borderTopColor: theme.colors.panelBorder, backgroundColor: theme.colors.surface },
           ]}
         >
+          <Pressable
+            onPress={() => setEmojiBarVisible((current) => !current)}
+            style={[
+              styles.emojiToggle,
+              {
+                backgroundColor: emojiBarVisible
+                  ? theme.colors.primarySoft
+                  : theme.colors.inputBackground,
+              },
+            ]}
+          >
+            <Feather
+              color={emojiBarVisible ? theme.colors.primaryDeep : theme.colors.textSoft}
+              name="smile"
+              size={20}
+            />
+          </Pressable>
+
           <TextInput
             multiline
             onChangeText={setDraft}
@@ -293,6 +353,38 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xs,
     fontFamily: 'PlusJakartaSans_500Medium',
     fontSize: 12,
+  },
+  emojiBar: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  emojiBarContent: {
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  emojiButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiButtonPressed: {
+    opacity: 0.6,
+    transform: [{ scale: 0.92 }],
+  },
+  emojiGlyph: {
+    // System font: the custom family has no emoji glyphs and iOS would draw
+    // ".notdef" boxes instead of falling back like the browser does.
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  emojiToggle: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputRow: {
     flexDirection: 'row',

@@ -23,6 +23,7 @@ import { AppFooterTabs, APP_FOOTER_HEIGHT } from '../components/AppFooterTabs';
 import { AppHeader } from '../components/AppHeader';
 import { EventFeedCard } from '../components/EventFeedCard';
 import { ScreenFrame } from '../components/ScreenFrame';
+import { SportSelectorTile } from '../components/SportSelectorTile';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useEvents } from '../providers/EventsProvider';
 import { useLocale } from '../providers/LocaleProvider';
@@ -60,6 +61,10 @@ function getHeroGradient(
     return [withAlpha(theme.colors.lilac, 'EB'), withAlpha(theme.colors.primary, 'CC'), withAlpha(theme.colors.primaryDeep, '8A')];
   }
 
+  if (selectedSportId === 'gym') {
+    return [withAlpha(theme.colors.lilac, 'E6'), withAlpha(theme.colors.primary, 'C8'), withAlpha(theme.colors.primaryDeep, '8E')];
+  }
+
   if (selectedSportId === 'road_cycling') {
     return [withAlpha(theme.colors.peach, 'EE'), withAlpha(theme.colors.primary, 'D8'), withAlpha(theme.colors.primaryDeep, '96')];
   }
@@ -93,10 +98,9 @@ export function HomeScreen() {
       copy.home.sportOptions[0],
     [copy.home.sportOptions, selectedSportId],
   );
-  const secondarySports = useMemo(
-    () => copy.home.sportOptions.filter((sport) => sport.id !== selectedSport.id),
-    [copy.home.sportOptions, selectedSport.id],
-  );
+  // Every sport stays in the grid: hiding the selected one made the remaining
+  // tiles shift up and take each other's place on every tap.
+  const sportChoices = copy.home.sportOptions;
   const filteredEvents = useMemo(
     () =>
       visibleEvents.filter(
@@ -151,27 +155,19 @@ export function HomeScreen() {
       return;
     }
 
-    Animated.timing(focusAnim, {
-      toValue: 0,
-      duration: 180,
-      easing: Easing.inOut(Easing.cubic),
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (!finished) {
-        return;
-      }
+    // Switch right away so the tapped tile highlights instantly; the spotlight
+    // below re-enters with its own spring instead of holding the tile back.
+    setSelectedSportId(nextSport.id);
+    focusAnim.setValue(0);
 
-      setSelectedSportId(nextSport.id);
-
-      requestAnimationFrame(() => {
-        Animated.spring(focusAnim, {
-          damping: 16,
-          mass: 0.9,
-          stiffness: 180,
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
-      });
+    requestAnimationFrame(() => {
+      Animated.spring(focusAnim, {
+        damping: 16,
+        mass: 0.9,
+        stiffness: 180,
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
     });
   };
 
@@ -303,35 +299,13 @@ export function HomeScreen() {
 
           <Animated.View style={[styles.gridSection, getEntranceStyle(4, 36)]}>
             <View style={styles.grid}>
-              {secondarySports.map((sport) => (
-                <Pressable
+              {sportChoices.map((sport) => (
+                <SportSelectorTile
                   key={sport.id}
+                  isSelected={sport.id === selectedSport.id}
                   onPress={() => handleSportSelection(sport)}
-                  style={({ pressed }) => [
-                    styles.gridCard,
-                    {
-                      backgroundColor: theme.colors.surfaceMuted,
-                      borderColor: theme.colors.panelBorder,
-                    },
-                    pressed ? styles.cardPressed : undefined,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.gridIconWrap,
-                      { backgroundColor: theme.colors.primarySoft },
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      color={theme.colors.primaryDeep}
-                      name={sport.iconName as never}
-                      size={28}
-                    />
-                  </View>
-                  <Text style={[styles.gridLabel, { color: theme.colors.textSoft }]}>
-                    {sport.label}
-                  </Text>
-                </Pressable>
+                  sport={sport}
+                />
               ))}
             </View>
           </Animated.View>
@@ -541,36 +515,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,
-  },
-  gridCard: {
-    width: '47.5%',
-    minHeight: 136,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 242, 243, 0.84)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.82)',
-  },
-  gridIconWrap: {
-    width: 62,
-    height: 62,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 214, 219, 0.75)',
-    marginBottom: spacing.md,
-  },
-  gridLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 1.1,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    color: colors.textSoft,
   },
   activitySection: {
     gap: spacing.md,

@@ -3,7 +3,8 @@ export type SportType =
   | 'mtb'
   | 'running'
   | 'trekking'
-  | 'trail_running';
+  | 'trail_running'
+  | 'gym';
 
 export type AppTab = 'home' | 'activity' | 'community' | 'profile';
 export type EventVisibility = 'public' | 'private';

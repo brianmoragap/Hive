@@ -10,6 +10,30 @@ export function formatEventSchedule(event: Pick<EventRecord, 'date' | 'time'>) {
   return `${event.date} · ${event.time}`;
 }
 
+/**
+ * Milliseconds for an event's start, parsed from the stored `DD/MM/YYYY` and
+ * `HH:mm` pair. Malformed values sort last instead of poisoning the comparison
+ * with NaN.
+ */
+export function getEventStartTimestamp(event: Pick<EventRecord, 'date' | 'time'>) {
+  const [day, month, year] = event.date.split('/').map(Number);
+  const [hours, minutes] = event.time.split(':').map(Number);
+
+  if ([day, month, year, hours, minutes].some((value) => !Number.isFinite(value))) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return new Date(year, month - 1, day, hours, minutes, 0, 0).getTime();
+}
+
+/** Soonest first; events that already started keep their chronological order. */
+export function compareByStart(
+  left: Pick<EventRecord, 'date' | 'time'>,
+  right: Pick<EventRecord, 'date' | 'time'>,
+) {
+  return getEventStartTimestamp(left) - getEventStartTimestamp(right);
+}
+
 export function formatAttendanceSummary(event: Pick<EventRecord, 'attendeeIds' | 'participantLimit'>) {
   return `${event.attendeeIds.length + 1}/${event.participantLimit}`;
 }

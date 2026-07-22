@@ -79,13 +79,15 @@ export const sportHeroImages: Record<string, string> = {
   road_cycling:
     'https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=900&q=85',
   mtb:
-    'https://images.unsplash.com/photo-1544191696-15693072e0de?auto=format&fit=crop&w=900&q=85',
+    'https://images.unsplash.com/photo-1544191696-102dbdaeeaa0?auto=format&fit=crop&w=900&q=85',
   running:
     'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=900&q=85',
   trekking:
     'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85',
   trail_running:
     'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&w=900&q=85',
+  gym:
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=85',
 };
 
 export const sportOptions: SportOption[] = [
@@ -123,6 +125,13 @@ export const sportOptions: SportOption[] = [
     subtitle: 'Altimetría, apoyo mutuo y planes visibles',
     iconName: 'shoe-sneaker',
     accent: ['#FFD8C7', '#C56A45'],
+  },
+  {
+    id: 'gym',
+    label: 'Gym',
+    subtitle: 'Rutinas de fuerza acompañadas y sin miradas',
+    iconName: 'dumbbell',
+    accent: ['#C7E3FF', '#2F6DA8'],
   },
 ];
 

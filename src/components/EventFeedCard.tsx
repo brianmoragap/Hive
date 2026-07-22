@@ -12,6 +12,7 @@ import {
   radii,
   shadows,
   spacing,
+  sportHeroImages,
 } from '../theme/tokens';
 import type { EventRecord } from '../types/domain';
 import {
@@ -22,6 +23,7 @@ import {
 } from '../utils/events';
 
 const imageBySport: Record<EventRecord['sport'], string> = {
+  gym: sportHeroImages.gym,
   mtb: heroBackgroundImage,
   road_cycling: createEventHeroImage,
   running: homeSpotlightImage,
@@ -30,6 +32,7 @@ const imageBySport: Record<EventRecord['sport'], string> = {
 };
 
 const gradientBySport: Record<EventRecord['sport'], [string, string, string]> = {
+  gym: ['rgba(14, 32, 52, 0.12)', 'rgba(24, 60, 96, 0.40)', 'rgba(16, 44, 74, 0.9)'],
   mtb: ['rgba(10, 58, 67, 0.1)', 'rgba(9, 79, 95, 0.38)', 'rgba(8, 66, 82, 0.92)'],
   road_cycling: ['rgba(24, 22, 32, 0.08)', 'rgba(89, 50, 80, 0.32)', 'rgba(71, 41, 60, 0.9)'],
   running: ['rgba(194, 80, 62, 0.12)', 'rgba(193, 66, 72, 0.36)', 'rgba(126, 36, 47, 0.88)'],
@@ -42,6 +45,8 @@ interface EventFeedCardProps {
   event: EventRecord;
   onActionPress: () => void;
   onPress?: () => void;
+  /** Marks the card as hosted by the current user or simply joined by her. */
+  role?: 'host' | 'attendee';
 }
 
 export function EventFeedCard({
@@ -49,6 +54,7 @@ export function EventFeedCard({
   event,
   onActionPress,
   onPress,
+  role,
 }: EventFeedCardProps) {
   const { copy } = useLocale();
   const { theme } = useAppTheme();
@@ -91,6 +97,31 @@ export function EventFeedCard({
       </ImageBackground>
 
       <View style={styles.body}>
+        {role ? (
+          <View
+            style={[
+              styles.roleBadge,
+              role === 'host'
+                ? { backgroundColor: theme.colors.primarySoft }
+                : { backgroundColor: theme.colors.mint },
+            ]}
+          >
+            <MaterialCommunityIcons
+              color={role === 'host' ? theme.colors.primaryDeep : theme.colors.success}
+              name={role === 'host' ? 'star-four-points' : 'ticket-confirmation'}
+              size={13}
+            />
+            <Text
+              style={[
+                styles.roleBadgeLabel,
+                { color: role === 'host' ? theme.colors.primaryDeep : theme.colors.success },
+              ]}
+            >
+              {role === 'host' ? copy.activity.roleHost : copy.activity.roleAttendee}
+            </Text>
+          </View>
+        ) : null}
+
         <Text style={[styles.title, { color: theme.colors.text }]}>{event.title}</Text>
         <Text style={[styles.meta, { color: theme.colors.textSoft }]}>
           {formatEventSchedule(event)} · {event.meetingPoint}
@@ -206,6 +237,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
+  },
+  roleBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+  },
+  roleBadgeLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 10,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
   },
   title: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',

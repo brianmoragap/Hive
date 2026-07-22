@@ -217,6 +217,8 @@ export interface AppCopy {
     emptyTitle: string;
     filterAll: string;
     hostVerified: string;
+    roleHost: string;
+    roleAttendee: string;
     searchPlaceholder: string;
     spotsLeftLabel: string;
     title: string;
@@ -458,6 +460,7 @@ export interface AppCopy {
 }
 
 const sportAccents = {
+  gym: ['#C7E3FF', '#2F6DA8'] as [string, string],
   mtb: ['#FFAF8A', '#E0552B'] as [string, string],
   road_cycling: ['#FF8A8A', '#AF232B'] as [string, string],
   running: ['#BCE7DE', '#2F8E6D'] as [string, string],
@@ -759,6 +762,13 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
           label: 'Trail running',
           subtitle: 'Altimetría, apoyo mutuo y planes visibles',
         },
+        {
+          accent: sportAccents.gym,
+          iconName: 'dumbbell',
+          id: 'gym',
+          label: 'Gym',
+          subtitle: 'Rutinas de fuerza acompañadas y sin miradas',
+        },
       ],
       sportsSectionTitle: 'Selecciona deporte',
       tabActivity: 'Actividad',
@@ -776,6 +786,8 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       emptyTitle: 'Todavía no tienes actividades unidas',
       filterAll: 'Todas',
       hostVerified: 'Host verificada',
+      roleHost: 'Organizas tú',
+      roleAttendee: 'Estás inscrita',
       searchPlaceholder: 'Buscar actividades o ubicaciones',
       spotsLeftLabel: 'cupos libres',
       title: 'Actividad',
@@ -1341,6 +1353,13 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
           label: 'Trail running',
           subtitle: 'Elevation, mutual support, and visible plans',
         },
+        {
+          accent: sportAccents.gym,
+          iconName: 'dumbbell',
+          id: 'gym',
+          label: 'Gym',
+          subtitle: 'Strength sessions with company and no stares',
+        },
       ],
       sportsSectionTitle: 'Choose a sport',
       tabActivity: 'Activity',
@@ -1358,6 +1377,8 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       emptyTitle: 'You have no joined activities yet',
       filterAll: 'All',
       hostVerified: 'Verified host',
+      roleHost: 'You host',
+      roleAttendee: "You're going",
       searchPlaceholder: 'Search activities or locations',
       spotsLeftLabel: 'spots left',
       title: 'Activity',

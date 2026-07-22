@@ -29,14 +29,14 @@ import { useSession } from '../providers/SessionProvider';
 import { colors, radii, shadows, spacing } from '../theme/tokens';
 import type { AppTab, SportType } from '../types/domain';
 import { handleAppTabPress } from '../utils/appNavigation';
-import { eventMatchesSearch, formatNotificationLine } from '../utils/events';
+import { compareByStart, eventMatchesSearch, formatNotificationLine } from '../utils/events';
 
 type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
 
 export function ActivityScreen() {
   const { copy } = useLocale();
   const { theme } = useAppTheme();
-  const { signOut } = useSession();
+  const { signOut, user } = useSession();
   const { joinedEvents, markAllNotificationsRead, notifications, unreadNotifications } =
     useEvents();
   const navigation = useNavigation<RootNavigation>();
@@ -69,10 +69,13 @@ export function ActivityScreen() {
 
   const filteredEvents = useMemo(
     () =>
-      scheduledJoinedEvents.filter((event) => {
-        const sportMatches = sportFilter === 'all' || event.sport === sportFilter;
-        return sportMatches && eventMatchesSearch(event, searchQuery);
-      }),
+      scheduledJoinedEvents
+        .filter((event) => {
+          const sportMatches = sportFilter === 'all' || event.sport === sportFilter;
+          return sportMatches && eventMatchesSearch(event, searchQuery);
+        })
+        // Soonest first, so what is about to happen is always on top.
+        .sort(compareByStart),
     [scheduledJoinedEvents, searchQuery, sportFilter],
   );
 
@@ -224,6 +227,7 @@ export function ActivityScreen() {
                     event={event}
                     onActionPress={() => openEvent(event.id)}
                     onPress={() => openEvent(event.id)}
+                    role={event.creatorId === user?.id ? 'host' : 'attendee'}
                   />
                 );
               })

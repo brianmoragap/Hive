@@ -34,6 +34,7 @@ import {
   radii,
   shadows,
   spacing,
+  sportHeroImages,
 } from '../theme/tokens';
 import type { EventRecord } from '../types/domain';
 import {
@@ -53,6 +54,7 @@ type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
 type EventDetailRoute = RouteProp<RootStackParamList, 'EventDetail'>;
 
 const imageBySport: Record<EventRecord['sport'], string> = {
+  gym: sportHeroImages.gym,
   mtb: heroBackgroundImage,
   road_cycling: createEventHeroImage,
   running: homeSpotlightImage,
@@ -61,6 +63,7 @@ const imageBySport: Record<EventRecord['sport'], string> = {
 };
 
 const gradientBySport: Record<EventRecord['sport'], [string, string, string]> = {
+  gym: ['rgba(14, 32, 52, 0.10)', 'rgba(24, 60, 96, 0.34)', 'rgba(16, 44, 74, 0.92)'],
   mtb: ['rgba(10, 58, 67, 0.08)', 'rgba(9, 79, 95, 0.34)', 'rgba(8, 66, 82, 0.92)'],
   road_cycling: ['rgba(24, 22, 32, 0.08)', 'rgba(89, 50, 80, 0.28)', 'rgba(71, 41, 60, 0.92)'],
   running: ['rgba(194, 80, 62, 0.08)', 'rgba(193, 66, 72, 0.24)', 'rgba(126, 36, 47, 0.9)'],
