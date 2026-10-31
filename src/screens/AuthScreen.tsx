@@ -48,6 +48,7 @@ export function AuthScreen() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmationNotice, setConfirmationNotice] = useState<string | null>(null);
   const [switchWidth, setSwitchWidth] = useState(0);
   const [focusedField, setFocusedField] = useState<FieldKey | null>(null);
 
@@ -82,6 +83,7 @@ export function AuthScreen() {
     try {
       setSubmitting(true);
       setError(null);
+      setConfirmationNotice(null);
 
       if (mode === 'signIn') {
         await signIn({ email, password });
@@ -89,11 +91,16 @@ export function AuthScreen() {
         await signUp({ email, password });
       }
     } catch (submissionError) {
-      setError(
+      const message =
         submissionError instanceof Error
           ? submissionError.message
-          : copy.auth.submitErrorFallback,
-      );
+          : copy.auth.submitErrorFallback;
+
+      if (message === copy.session.accountCreatedNeedsConfirmation) {
+        setConfirmationNotice(message);
+      } else {
+        setError(message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -105,6 +112,7 @@ export function AuthScreen() {
     }
 
     setError(null);
+    setConfirmationNotice(null);
     setMode(nextMode);
   };
 
@@ -252,6 +260,13 @@ export function AuthScreen() {
                       {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     </View>
                   </View>
+
+                  {confirmationNotice ? (
+                    <View style={styles.confirmationNotice}>
+                      <Feather color={hiveColors.lima} name="mail" size={16} />
+                      <Text style={styles.confirmationNoticeText}>{confirmationNotice}</Text>
+                    </View>
+                  ) : null}
 
                   <Pressable
                     disabled={submitting}
@@ -461,6 +476,24 @@ const styles = StyleSheet.create({
     fontFamily: hiveFonts.medium,
     fontSize: 12,
     color: hiveColors.fucsiaTints[400],
+  },
+  confirmationNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radii.pill,
+    backgroundColor: 'rgba(204,255,0,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(204,255,0,0.4)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  confirmationNoticeText: {
+    flex: 1,
+    fontFamily: hiveFonts.demiBold,
+    fontSize: 13,
+    lineHeight: 18,
+    color: hiveColors.lima,
   },
   submitButton: {
     minHeight: 56,

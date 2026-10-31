@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { hasSupabaseConfig, supabase } from '../lib/supabase';
 import { useLocale } from './LocaleProvider';
@@ -46,6 +47,25 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 
 function createLocalId() {
   return `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// Where the confirmation-email link should send her back to. On a phone,
+// the OS hands `hive://` straight to this app via its registered scheme. On
+// web, it must point at wherever this build is actually hosted -- never a
+// hardcoded localhost -- or the link lands on a dead page. Either way, this
+// also needs to be added to the Supabase project's Redirect URLs allow list
+// (Authentication -> URL Configuration), or Supabase ignores it and falls
+// back to the project's default Site URL.
+function getEmailRedirectUrl(): string | undefined {
+  if (Platform.OS === 'web') {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    return window.location.origin + window.location.pathname;
+  }
+
+  return 'hive://';
 }
 
 function buildBaseProfile(user: SessionUser, seed?: Partial<UserProfile>): UserProfile {
@@ -372,6 +392,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await client.auth.signUp({
       email: trimmedEmail,
       password,
+      options: {
+        emailRedirectTo: getEmailRedirectUrl(),
+      },
     });
 
     if (error) {

@@ -536,7 +536,7 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
     },
     session: {
       accountCreatedNeedsConfirmation:
-        'La cuenta fue creada, pero tu proyecto de Supabase exige confirmación de correo antes de entrar.',
+        'Te enviamos un correo de confirmación. Ábrelo para activar tu cuenta y poder entrar.',
       activeSessionRequired: 'No hay una sesión activa.',
       configureSupabase: 'Supabase no está configurado.',
       invalidCredentials: 'Ingresa tu correo y contraseña.',
@@ -1174,7 +1174,7 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
     },
     session: {
       accountCreatedNeedsConfirmation:
-        'The account was created, but your Supabase project requires email confirmation before sign in.',
+        "We sent you a confirmation email. Open it to activate your account and sign in.",
       activeSessionRequired: 'There is no active session.',
       configureSupabase: 'Supabase is not configured.',
       invalidCredentials: 'Enter your email and password.',

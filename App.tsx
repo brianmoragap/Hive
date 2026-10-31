@@ -1,5 +1,6 @@
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
+import './src/web/registerWebFonts';
 
 import {
   PlusJakartaSans_500Medium,
@@ -11,7 +12,7 @@ import {
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import type { LinkingOptions } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from './src/navigation/AppNavigator';
@@ -82,10 +83,14 @@ function AppShell() {
   };
 
   return (
-    <NavigationContainer linking={linking} theme={navigationTheme}>
-      <StatusBar style={theme.statusBarStyle} />
-      <AppNavigator />
-    </NavigationContainer>
+    <View style={styles.webRoot}>
+      <View style={styles.webFrame}>
+        <NavigationContainer linking={linking} theme={navigationTheme}>
+          <StatusBar style={theme.statusBarStyle} />
+          <AppNavigator />
+        </NavigationContainer>
+      </View>
+    </View>
   );
 }
 
@@ -95,5 +100,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
+  },
+  // On a wide browser window, keep the app phone-shaped and centered instead
+  // of stretching every screen edge-to-edge. No-op on native: maxWidth is
+  // undefined there and alignItems stays the RN default.
+  webRoot: {
+    flex: 1,
+    alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
+    backgroundColor: Platform.OS === 'web' ? '#0D0D0D' : 'transparent',
+  },
+  webFrame: {
+    flex: 1,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 480 : undefined,
   },
 });
