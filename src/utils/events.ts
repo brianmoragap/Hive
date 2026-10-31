@@ -68,7 +68,11 @@ export function eventMatchesSearch(
 }
 
 export function formatNotificationLine(copy: AppCopy, notification: NotificationDigest) {
-  if (notification.action === 'verification_approved' || notification.action === 'verification_rejected') {
+  if (
+    notification.action === 'verification_approved' ||
+    notification.action === 'verification_rejected' ||
+    notification.action === 'sos'
+  ) {
     return notification.eventTitle;
   }
 

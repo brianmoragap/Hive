@@ -1,5 +1,5 @@
 export type ThemeMode = 'light' | 'dark';
-export type ThemePaletteId = 'coral' | 'neutral' | 'ocean' | 'sunset' | 'forest';
+export type ThemePaletteId = 'hive' | 'coral' | 'neutral' | 'ocean' | 'sunset' | 'forest';
 
 export interface AppThemeColors {
   background: string;
@@ -36,6 +36,12 @@ export interface AppThemeColors {
   blobCoral: string;
   blobMint: string;
   blobLilac: string;
+  /** Solid fill for the active state of nav chrome (e.g. bottom tab chip). */
+  navActive: string;
+  /** Readable text/icon color for the active nav label, sitting on the page background. */
+  navActiveText: string;
+  /** Icon/text color to place on top of a solid `navActive` fill. */
+  navActiveIcon: string;
 }
 
 export interface AppTheme {
@@ -72,9 +78,48 @@ interface PaletteTokens {
   mint: string;
   lilac: string;
   peach: string;
+  navActiveLight: string;
+  navActiveDark: string;
+  navActiveTextLight: string;
+  navActiveTextDark: string;
+  navActiveIcon: string;
+  iconLight: string;
+  iconDark: string;
 }
 
 const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
+  hive: {
+    backgroundDark: '#121212',
+    backgroundLight: '#F5F5F2',
+    backgroundWarmDark: '#1A1A14',
+    backgroundWarmLight: '#F7FFD6',
+    highlight: '#FF66B2',
+    primary: '#FF0080',
+    primaryDeepLight: '#AA0054',
+    primaryDeepDark: '#FFB3D9',
+    primarySoftDark: '#3A0A20',
+    primarySoftLight: '#FFD6EC',
+    surfaceDark: '#1C1C1C',
+    surfaceLight: '#FFFFFF',
+    surfaceStrongDark: '#242424',
+    surfaceStrongLight: '#FFFFFF',
+    textDark: '#F5F5F2',
+    textLight: '#0D0D0D',
+    textMutedDark: '#C9C9C2',
+    textMutedLight: '#5C5C57',
+    textSoftDark: '#8A8A85',
+    textSoftLight: '#9B9B96',
+    mint: '#E0FF77',
+    lilac: '#EEFFAA',
+    peach: '#FFB3D9',
+    navActiveLight: '#CCFF00',
+    navActiveDark: '#CCFF00',
+    navActiveTextLight: '#3A5A00',
+    navActiveTextDark: '#CCFF00',
+    navActiveIcon: '#0D0D0D',
+    iconLight: '#0D0D0D',
+    iconDark: '#F5F5F2',
+  },
   coral: {
     backgroundDark: '#110D10',
     backgroundLight: '#FFF5F2',
@@ -99,6 +144,13 @@ const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
     mint: '#BCE7DE',
     lilac: '#E8D7FF',
     peach: '#FFD8C7',
+    navActiveLight: '#AF232B',
+    navActiveDark: '#FFB0B0',
+    navActiveTextLight: '#AF232B',
+    navActiveTextDark: '#FFB0B0',
+    navActiveIcon: '#FFFFFF',
+    iconLight: '#AF232B',
+    iconDark: '#FFB0B0',
   },
   neutral: {
     backgroundDark: '#11100E',
@@ -124,6 +176,13 @@ const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
     mint: '#D8E2DA',
     lilac: '#E7E3E9',
     peach: '#EDE2D8',
+    navActiveLight: '#4A433D',
+    navActiveDark: '#E6DED5',
+    navActiveTextLight: '#4A433D',
+    navActiveTextDark: '#E6DED5',
+    navActiveIcon: '#FFFFFF',
+    iconLight: '#4A433D',
+    iconDark: '#E6DED5',
   },
   ocean: {
     backgroundDark: '#0C1518',
@@ -149,6 +208,13 @@ const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
     mint: '#C7EEE7',
     lilac: '#DCEBFA',
     peach: '#D7F6F3',
+    navActiveLight: '#135E63',
+    navActiveDark: '#B9F0EC',
+    navActiveTextLight: '#135E63',
+    navActiveTextDark: '#B9F0EC',
+    navActiveIcon: '#FFFFFF',
+    iconLight: '#135E63',
+    iconDark: '#B9F0EC',
   },
   sunset: {
     backgroundDark: '#17100C',
@@ -174,6 +240,13 @@ const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
     mint: '#FFEBC5',
     lilac: '#F8E0D4',
     peach: '#FFD8C7',
+    navActiveLight: '#A34A1E',
+    navActiveDark: '#FFD4BB',
+    navActiveTextLight: '#A34A1E',
+    navActiveTextDark: '#FFD4BB',
+    navActiveIcon: '#FFFFFF',
+    iconLight: '#A34A1E',
+    iconDark: '#FFD4BB',
   },
   forest: {
     backgroundDark: '#0F1410',
@@ -199,10 +272,18 @@ const paletteTokens: Record<ThemePaletteId, PaletteTokens> = {
     mint: '#CDEBD8',
     lilac: '#E1EAD8',
     peach: '#EEE4D8',
+    navActiveLight: '#2F5F43',
+    navActiveDark: '#D5F1DF',
+    navActiveTextLight: '#2F5F43',
+    navActiveTextDark: '#D5F1DF',
+    navActiveIcon: '#FFFFFF',
+    iconLight: '#2F5F43',
+    iconDark: '#D5F1DF',
   },
 };
 
 export const themePaletteIds: ThemePaletteId[] = [
+  'hive',
   'coral',
   'neutral',
   'ocean',
@@ -266,10 +347,13 @@ export function buildAppTheme(palette: ThemePaletteId, mode: ThemeMode): AppThem
     panelGradientEnd: isDark ? withAlpha(tokens.surfaceDark, 'F0') : withAlpha(tokens.surfaceLight, 'EB'),
     inputBackground: isDark ? withAlpha(tokens.surfaceStrongDark, 'F0') : withAlpha(tokens.surfaceStrongLight, 'F0'),
     inputPlaceholder: isDark ? withAlpha(tokens.textDark, '80') : withAlpha(tokens.textSoftLight, '99'),
-    iconOnBackground: isDark ? tokens.textDark : tokens.primaryDeepLight,
+    iconOnBackground: isDark ? tokens.iconDark : tokens.iconLight,
     blobCoral: isDark ? withAlpha(tokens.highlight, '18') : withAlpha(tokens.highlight, '24'),
     blobMint: isDark ? withAlpha(tokens.mint, '1A') : withAlpha(tokens.mint, '38'),
     blobLilac: isDark ? withAlpha(tokens.lilac, '14') : withAlpha(tokens.lilac, '34'),
+    navActive: isDark ? tokens.navActiveDark : tokens.navActiveLight,
+    navActiveText: isDark ? tokens.navActiveTextDark : tokens.navActiveTextLight,
+    navActiveIcon: tokens.navActiveIcon,
   };
 
   return {
@@ -285,4 +369,4 @@ export function buildAppTheme(palette: ThemePaletteId, mode: ThemeMode): AppThem
   };
 }
 
-export const defaultAppTheme = buildAppTheme('coral', 'light');
+export const defaultAppTheme = buildAppTheme('hive', 'light');

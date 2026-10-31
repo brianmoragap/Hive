@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -67,14 +66,13 @@ export function SportSelectorTile({ isSelected, onPress, sport }: SportSelectorT
           isSelected ? styles.cardSelected : undefined,
         ]}
       >
-        <Animated.View style={[StyleSheet.absoluteFill, styles.fill, { opacity: selectAnim }]}>
-          <LinearGradient
-            colors={sport.accent}
-            end={{ x: 1, y: 0 }}
-            start={{ x: 0, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        </Animated.View>
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            styles.fill,
+            { backgroundColor: theme.colors.primary, opacity: selectAnim },
+          ]}
+        />
 
         <Animated.View
           style={[

@@ -37,6 +37,7 @@ interface SessionContextValue {
   signOut: () => Promise<void>;
   signUp: (credentials: AuthCredentials) => Promise<void>;
   submitVerification: (payload: VerificationPayload) => Promise<void>;
+  returnToVerificationEdit: () => Promise<void>;
   debugApproveProfile: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -584,6 +585,35 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     await refreshProfile();
   };
 
+  const returnToVerificationEdit = async () => {
+    if (!user || !profile) {
+      return;
+    }
+
+    const nextProfile: UserProfile = {
+      ...profile,
+      verificationStatus: 'unsubmitted',
+    };
+
+    if (isMockMode) {
+      setProfile(nextProfile);
+      await AsyncStorage.setItem(MOCK_PROFILE_KEY, JSON.stringify(nextProfile));
+      return;
+    }
+
+    const client = getSupabaseClient(copy.session.configureSupabase);
+    const { error } = await client
+      .from('profiles')
+      .update({ verification_status: 'unsubmitted' })
+      .eq('id', user.id);
+
+    if (error) {
+      throw error;
+    }
+
+    await refreshProfile();
+  };
+
   const debugApproveProfile = async () => {
     if (!profile) {
       return;
@@ -616,6 +646,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       signUp,
       completeOnboarding,
       submitVerification,
+      returnToVerificationEdit,
       debugApproveProfile,
       refreshProfile,
     }),

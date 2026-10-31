@@ -142,6 +142,9 @@ export interface AppCopy {
   pending: {
     copy: string;
     demoApprove: string;
+    editConfirmBody: string;
+    editConfirmTitle: string;
+    editCta: string;
     identityTitle: string;
     kicker: string;
     reviewOnly: string;
@@ -310,6 +313,19 @@ export interface AppCopy {
     scannerFallback: string;
     routeMetric: string;
     routeNote: string;
+    sosAction: string;
+    sosConfirmAction: string;
+    sosConfirmBody: string;
+    sosConfirmTitle: string;
+    sosFailedBody: string;
+    sosFailedTitle: string;
+    sosNoContactsAction: string;
+    sosNoContactsBody: string;
+    sosNoContactsTitle: string;
+    sosSentBody: string;
+    sosSentTitle: string;
+    sosSmsBody: string;
+    sosSmsBodyNoLocation: string;
     spotsLabel: string;
     startLabel: string;
     visibilityLabel: string;
@@ -329,6 +345,8 @@ export interface AppCopy {
     meetingPointLabel: string;
     meetingPointPlaceholder: string;
     mapPickerHint: string;
+    geocodeSearching: string;
+    geocodeNotFound: string;
     missingFields: string;
     privateAfterCreate: string;
     privateVisibilityCopy: string;
@@ -438,6 +456,8 @@ export interface AppCopy {
     languageTitle: string;
     paletteCoral: string;
     paletteCoralCopy: string;
+    paletteHive: string;
+    paletteHiveCopy: string;
     paletteForest: string;
     paletteForestCopy: string;
     paletteNeutral: string;
@@ -455,6 +475,27 @@ export interface AppCopy {
   };
   socialPreview: {
     helperText: string;
+    title: string;
+  };
+  emergencyContacts: {
+    addAction: string;
+    addFailedBody: string;
+    addFailedTitle: string;
+    backToSettings: string;
+    copy: string;
+    deleteAction: string;
+    deleteConfirmBody: string;
+    deleteConfirmTitle: string;
+    emptyCopy: string;
+    emptyTitle: string;
+    maxReachedCopy: string;
+    missingFieldsBody: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    settingsLinkCopy: string;
+    settingsLinkTitle: string;
     title: string;
   };
 }
@@ -593,8 +634,9 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       sendCodeCta: 'Enviar código',
       sendCodeSuccessBody: 'Enviamos un código de 6 dígitos a tu correo de acceso.',
       sendCodeSuccessTitle: 'Código enviado',
-      sosDescription: 'Alerta de emergencia en un toque con ubicación GPS en vivo.',
-      sosTitle: 'SOS inmediato',
+      sosDescription:
+        'Un toque avisa al organizador de la salida y te abre un SMS con tu ubicación para tus contactos de confianza.',
+      sosTitle: 'SOS en un toque',
       smsCodeCopy: 'Te enviamos un código por correo. Ingrésalo aquí para continuar con la validación de identidad.',
       smsCodeLabel: 'Código por correo',
       smsCodePlaceholder: '6 dígitos',
@@ -639,6 +681,9 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       copy:
         'Mientras se valida tu información, Hive mantiene bloqueadas las funciones sociales y de eventos.',
       demoApprove: 'Aprobar en demo',
+      editConfirmBody: 'Volverás al paso de verificación para corregir tu nombre, RUT o documentos.',
+      editConfirmTitle: '¿Revisar tus datos?',
+      editCta: 'Revisar mis datos',
       identityTitle: 'Nombre',
       kicker: 'Estado de cuenta',
       reviewOnly: 'Perfil visible solo para el equipo de validación.',
@@ -895,6 +940,22 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
         'En web o simulador usa el código manual. El escáner real queda disponible en dispositivo físico.',
       routeMetric: 'Distancia estimada',
       routeNote: 'Ajusta meeting point, visibilidad y cupos desde la creación del evento.',
+      sosAction: 'SOS',
+      sosConfirmAction: 'Sí, enviar alerta',
+      sosConfirmBody:
+        'Vamos a avisarle al organizador de esta salida ahora mismo, y te vamos a abrir tus mensajes para que avises por SMS a tus contactos de confianza con tu ubicación actual.',
+      sosConfirmTitle: '¿Activar alerta SOS?',
+      sosFailedBody: 'Intenta de nuevo. Si no se puede, llama directamente a alguien de confianza.',
+      sosFailedTitle: 'No pudimos enviar la alerta',
+      sosNoContactsAction: 'Agregar contacto',
+      sosNoContactsBody:
+        'Para que el SOS pueda avisarle a alguien por SMS, primero necesitas guardar al menos un contacto de confianza.',
+      sosNoContactsTitle: 'Agrega un contacto de confianza primero',
+      sosSentBody:
+        'Avisamos al organizador de la salida. Ahora te abrimos tus mensajes para que le avises también a tu contacto de confianza.',
+      sosSentTitle: 'Alerta enviada',
+      sosSmsBody: 'Necesito ayuda. Estoy en "{event}". Mi ubicación: {link}',
+      sosSmsBodyNoLocation: 'Necesito ayuda. Estoy en "{event}". No pude compartir mi ubicación exacta.',
       spotsLabel: 'cupos disponibles',
       startLabel: 'Comienza a las',
       visibilityLabel: 'Visibilidad',
@@ -917,6 +978,8 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       meetingPointLabel: 'Punto de encuentro',
       meetingPointPlaceholder: 'Busca o escribe una ubicación segura',
       mapPickerHint: 'Toca el mapa o arrastra el pin para marcar el punto exacto.',
+      geocodeSearching: 'Buscando ubicación…',
+      geocodeNotFound: 'No encontramos esa dirección. Ajusta el pin manualmente.',
       missingFields: 'Completa título, fecha, hora y punto de encuentro antes de crear la salida.',
       privateAfterCreate:
         'Si la salida es privada, después podrás compartirla por enlace o invitar integrantes Hive desde Mis eventos.',
@@ -1037,8 +1100,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       languageEnglish: 'Inglés',
       languageSpanish: 'Español',
       languageTitle: 'Idioma',
-      paletteCoral: 'Coral Hive',
-      paletteCoralCopy: 'La identidad cálida original de Hive.',
+      paletteCoral: 'Coral clásico',
+      paletteCoralCopy: 'El palette cálido original, previo al rebrand oficial.',
+      paletteHive: 'Hive',
+      paletteHiveCopy: 'Lima, fucsia y negro — la identidad oficial de marca.',
       paletteForest: 'Bosque',
       paletteForestCopy: 'Verde confianza con una sensación más serena.',
       paletteNeutral: 'Neutral',
@@ -1059,6 +1124,28 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       helperText:
         'Google y Apple quedan visibles como acceso futuro. Por ahora, el ingreso y el registro siguen siendo manuales.',
       title: 'Accesos sociales',
+    },
+    emergencyContacts: {
+      addAction: 'Agregar contacto',
+      addFailedBody: 'No pudimos guardar el contacto. Intenta de nuevo.',
+      addFailedTitle: 'No se pudo guardar',
+      backToSettings: 'Ajustes',
+      copy:
+        'Si activas el botón SOS durante una salida, te vamos a abrir tus mensajes con un SMS ya escrito para que avises a estas personas.',
+      deleteAction: 'Eliminar',
+      deleteConfirmBody: 'Vas a dejar de poder avisarle por SOS. Puedes agregarlo de nuevo cuando quieras.',
+      deleteConfirmTitle: '¿Eliminar este contacto?',
+      emptyCopy: 'Agrega al menos una persona a la que avisar si activas el SOS durante una salida.',
+      emptyTitle: 'Todavía no tienes contactos de confianza',
+      maxReachedCopy: 'Llegaste al máximo de 5 contactos. Elimina uno para agregar otro.',
+      missingFieldsBody: 'Ingresa un nombre y un teléfono válidos.',
+      nameLabel: 'Nombre',
+      namePlaceholder: 'Nombre del contacto',
+      phoneLabel: 'Teléfono',
+      phonePlaceholder: '+56 9 1234 5678',
+      settingsLinkCopy: 'Gestiona a quién avisamos cuando activas el botón SOS.',
+      settingsLinkTitle: 'Contactos de confianza',
+      title: 'Contactos de confianza',
     },
   },
   en: {
@@ -1184,8 +1271,9 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       sendCodeCta: 'Send code',
       sendCodeSuccessBody: 'We sent a 6-digit code to your account email.',
       sendCodeSuccessTitle: 'Code sent',
-      sosDescription: 'One-tap emergency contact alerting with live GPS location.',
-      sosTitle: 'Instant SOS',
+      sosDescription:
+        "One tap notifies the outing's organizer and opens a text to your trusted contacts with your location.",
+      sosTitle: 'One-tap SOS',
       smsCodeCopy: 'We sent you a code by email. Enter it here to continue with identity verification.',
       smsCodeLabel: 'Email code',
       smsCodePlaceholder: '6 digits',
@@ -1230,6 +1318,9 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       copy:
         'While your information is being validated, Hive keeps social and event features locked.',
       demoApprove: 'Approve in demo',
+      editConfirmBody: 'You will go back to the verification step to fix your name, RUT, or documents.',
+      editConfirmTitle: 'Review your info?',
+      editCta: 'Review my info',
       identityTitle: 'Name',
       kicker: 'Account status',
       reviewOnly: 'This profile is visible only to the validation team.',
@@ -1484,6 +1575,22 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
         'On web or simulator use the manual code. The live scanner is available on a physical device.',
       routeMetric: 'Estimated distance',
       routeNote: 'Adjust meeting point, visibility, and spots from event creation.',
+      sosAction: 'SOS',
+      sosConfirmAction: 'Yes, send alert',
+      sosConfirmBody:
+        "We'll notify this outing's organizer right away, and open your messages so you can text your trusted contact with your current location.",
+      sosConfirmTitle: 'Trigger SOS alert?',
+      sosFailedBody: 'Try again. If it still fails, call someone you trust directly.',
+      sosFailedTitle: "We couldn't send the alert",
+      sosNoContactsAction: 'Add a contact',
+      sosNoContactsBody:
+        'For SOS to be able to text someone, you need to save at least one trusted contact first.',
+      sosNoContactsTitle: 'Add a trusted contact first',
+      sosSentBody:
+        "We notified the outing's organizer. Now we'll open your messages so you can alert your trusted contact too.",
+      sosSentTitle: 'Alert sent',
+      sosSmsBody: 'I need help. I\'m at "{event}". My location: {link}',
+      sosSmsBodyNoLocation: 'I need help. I\'m at "{event}". I could not share my exact location.',
       spotsLabel: 'spots available',
       startLabel: 'Starts at',
       visibilityLabel: 'Visibility',
@@ -1506,6 +1613,8 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       meetingPointLabel: 'Meeting point',
       meetingPointPlaceholder: 'Search or type a safe location',
       mapPickerHint: 'Tap the map or drag the pin to drop the exact spot.',
+      geocodeSearching: 'Searching location…',
+      geocodeNotFound: "We couldn't find that address. Adjust the pin manually.",
       missingFields: 'Complete title, date, time, and meeting point before creating the outing.',
       privateAfterCreate:
         'If the outing is private, you can share it by link or invite Hive members from My events right after creation.',
@@ -1626,8 +1735,10 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       languageEnglish: 'English',
       languageSpanish: 'Spanish',
       languageTitle: 'Language',
-      paletteCoral: 'Hive Coral',
-      paletteCoralCopy: 'The original warm Hive identity.',
+      paletteCoral: 'Classic Coral',
+      paletteCoralCopy: 'The original warm palette, before the official rebrand.',
+      paletteHive: 'Hive',
+      paletteHiveCopy: 'Lime, fuchsia, and black — the official brand identity.',
       paletteForest: 'Forest',
       paletteForestCopy: 'Calm trust-driven greens.',
       paletteNeutral: 'Neutral',
@@ -1647,6 +1758,28 @@ export const copyByLanguage: Record<AppLanguage, AppCopy> = {
       helperText:
         'Google and Apple stay visible as future access methods. For now, sign in and registration remain manual.',
       title: 'Social access',
+    },
+    emergencyContacts: {
+      addAction: 'Add contact',
+      addFailedBody: 'We could not save that contact. Try again.',
+      addFailedTitle: 'Could not save',
+      backToSettings: 'Settings',
+      copy:
+        'If you trigger SOS during an outing, we open your messages with an SMS already written so you can alert these people.',
+      deleteAction: 'Delete',
+      deleteConfirmBody: 'SOS will stop being able to reach them. You can add them again anytime.',
+      deleteConfirmTitle: 'Delete this contact?',
+      emptyCopy: 'Add at least one person to notify if you trigger SOS during an outing.',
+      emptyTitle: 'No trusted contacts yet',
+      maxReachedCopy: "You've reached the 5-contact limit. Remove one to add another.",
+      missingFieldsBody: 'Enter a name and a valid phone number.',
+      nameLabel: 'Name',
+      namePlaceholder: "Contact's name",
+      phoneLabel: 'Phone',
+      phonePlaceholder: '+56 9 1234 5678',
+      settingsLinkCopy: 'Manage who we alert when you trigger the SOS button.',
+      settingsLinkTitle: 'Trusted contacts',
+      title: 'Trusted contacts',
     },
   },
 };

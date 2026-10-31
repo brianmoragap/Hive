@@ -4,6 +4,7 @@ import { useSession } from '../providers/SessionProvider';
 import { ActivityScreen } from '../screens/ActivityScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
+import { EmergencyContactsScreen } from '../screens/EmergencyContactsScreen';
 import { EventChatScreen } from '../screens/EventChatScreen';
 import { EventCheckInScreen } from '../screens/EventCheckInScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Activity: undefined;
   Auth: undefined;
   CreateEvent: { eventId?: string; prefillSport?: SportType } | undefined;
+  EmergencyContacts: undefined;
   EventChat: { eventId: string };
   EventCheckIn: { eventId: string };
   EventDetail: { eventId: string };
@@ -67,6 +69,11 @@ export function AppNavigator() {
           <Stack.Screen
             component={CreateEventScreen}
             name="CreateEvent"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            component={EmergencyContactsScreen}
+            name="EmergencyContacts"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen

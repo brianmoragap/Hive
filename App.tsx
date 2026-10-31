@@ -20,6 +20,7 @@ import { EventsProvider } from './src/providers/EventsProvider';
 import { LocaleProvider } from './src/providers/LocaleProvider';
 import { SessionProvider } from './src/providers/SessionProvider';
 import { ThemeProvider, useAppTheme } from './src/providers/ThemeProvider';
+import { hiveFontAssets } from './src/theme/hiveBrand';
 import { colors } from './src/theme/tokens';
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
     PlusJakartaSans_600SemiBold,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
+    ...hiveFontAssets,
   });
 
   if (!fontsLoaded) {

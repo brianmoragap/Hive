@@ -186,13 +186,33 @@ export type NotificationPerspective = 'organizer' | 'attendee';
 
 export type VerificationDecisionAction = 'verification_approved' | 'verification_rejected';
 
+export type SosNotificationAction = 'sos';
+
 export interface NotificationDigest {
   id: string;
-  action: Exclude<EventActivityType, 'created'> | VerificationDecisionAction;
+  action: Exclude<EventActivityType, 'created'> | VerificationDecisionAction | SosNotificationAction;
   eventId: string;
   eventTitle: string;
   audienceCount: number;
   createdAt: string;
   read: boolean;
   perspective: NotificationPerspective;
+}
+
+export interface EmergencyContact {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  createdAt: string;
+}
+
+export type SosAlertStatus =
+  | 'sent'
+  | 'not_authenticated'
+  | 'not_found'
+  | 'not_participant';
+
+export interface SosAlertResult {
+  status: SosAlertStatus;
+  alertId?: string;
 }

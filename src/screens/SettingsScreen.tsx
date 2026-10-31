@@ -25,6 +25,10 @@ export function SettingsScreen() {
     ThemePaletteId,
     { description: string; title: string }
   > = {
+    hive: {
+      description: copy.settings.paletteHiveCopy,
+      title: copy.settings.paletteHive,
+    },
     coral: {
       description: copy.settings.paletteCoralCopy,
       title: copy.settings.paletteCoral,
@@ -76,6 +80,29 @@ export function SettingsScreen() {
             <Text style={[styles.heroTitle, { color: theme.colors.text }]}>{copy.settings.title}</Text>
             <Text style={[styles.heroCopy, { color: theme.colors.textMuted }]}>{copy.settings.copy}</Text>
           </View>
+
+          <Pressable
+            onPress={() => navigation.navigate('EmergencyContacts')}
+            style={({ pressed }) => [
+              styles.sectionCard,
+              styles.linkCard,
+              { backgroundColor: theme.colors.surfaceStrong },
+              pressed ? styles.pressed : undefined,
+            ]}
+          >
+            <View style={styles.linkIconWrap}>
+              <Feather color={theme.colors.primaryDeep} name="phone-call" size={20} />
+            </View>
+            <View style={styles.linkCopy}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                {copy.emergencyContacts.settingsLinkTitle}
+              </Text>
+              <Text style={[styles.sectionCopy, { color: theme.colors.textMuted }]}>
+                {copy.emergencyContacts.settingsLinkCopy}
+              </Text>
+            </View>
+            <Feather color={theme.colors.textSoft} name="chevron-right" size={18} />
+          </Pressable>
 
           <View style={[styles.sectionCard, { backgroundColor: theme.colors.surfaceStrong }]}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
@@ -336,6 +363,23 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
     ...shadows.card,
+  },
+  linkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  linkIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 214, 219, 0.6)',
+  },
+  linkCopy: {
+    flex: 1,
+    gap: 2,
+    marginLeft: spacing.md,
   },
   sectionTitle: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',

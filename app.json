@@ -14,7 +14,10 @@
       "backgroundColor": "#fff4f4"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Hive usa tu ubicación solo cuando activas el botón SOS, para incluirla en la alerta que envías a tus contactos de confianza y al organizador."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,14 +25,21 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Hive usa tu ubicación solo cuando activas el botón SOS, para incluirla en la alerta que envías a tus contactos de confianza y al organizador."
+        }
+      ]
     ]
   }
 }

@@ -1,11 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAppTheme } from '../providers/ThemeProvider';
 import { radii, spacing } from '../theme/tokens';
 
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
+const logoImage = require('../../assets/images/hive-logo-black.png');
+const logoAspectRatio = 880 / 268;
+const logoWidth = 76;
+const logoHeight = Math.round(logoWidth / logoAspectRatio);
 
 interface AppHeaderProps {
   notificationCount?: number;
@@ -28,7 +33,7 @@ export function AppHeader({
     <View style={styles.headerShell}>
       <View style={styles.topBar}>
         <HeaderActionButton accessibilityLabel="menu" iconName="menu" onPress={onMenuPress} />
-        <Text style={[styles.wordmark, { color: theme.colors.iconOnBackground }]}>HIVE</Text>
+        <Image resizeMode="contain" source={logoImage} style={styles.logo} />
         <View>
           <HeaderActionButton
             accessibilityLabel="notifications"
@@ -97,11 +102,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  wordmark: {
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 20,
-    letterSpacing: -0.9,
-    transform: [{ skewX: '-8deg' }],
+  logo: {
+    width: logoWidth,
+    height: logoHeight,
   },
   notificationBadge: {
     position: 'absolute',

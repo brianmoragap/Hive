@@ -40,6 +40,7 @@ import {
 import type { AppTab, EventDraftPayload, EventVisibility, SkillLevel, SportType } from '../types/domain';
 import { handleAppTabPress } from '../utils/appNavigation';
 import { formatNotificationLine } from '../utils/events';
+import { geocodeAddress } from '../utils/geocoding';
 
 type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
 type CreateEventRoute = RouteProp<RootStackParamList, 'CreateEvent'>;
@@ -116,6 +117,10 @@ export function CreateEventScreen() {
   }
   const initialCenter = initialCenterRef.current;
   const [coords, setCoords] = useState<LatLng>(initialCenter);
+  const [mapCenter, setMapCenter] = useState<LatLng>(initialCenter);
+  const [mapKey, setMapKey] = useState(0);
+  const [geocodeStatus, setGeocodeStatus] = useState<'idle' | 'searching' | 'notFound'>('idle');
+  const skipNextGeocodeRef = useRef(Boolean(existingEvent));
 
   useEffect(() => {
     Animated.stagger(
@@ -133,6 +138,7 @@ export function CreateEventScreen() {
 
   useEffect(() => {
     if (existingEvent) {
+      skipNextGeocodeRef.current = true;
       setTitle(existingEvent.title);
       setSelectedSportId(existingEvent.sport);
       setSkillLevel(existingEvent.skillLevel);
@@ -140,7 +146,10 @@ export function CreateEventScreen() {
       setTime(existingEvent.time);
       setMeetingPoint(existingEvent.meetingPoint);
       if (existingEvent.lat != null && existingEvent.lng != null) {
-        setCoords({ latitude: existingEvent.lat, longitude: existingEvent.lng });
+        const storedLocation = { latitude: existingEvent.lat, longitude: existingEvent.lng };
+        setCoords(storedLocation);
+        setMapCenter(storedLocation);
+        setMapKey((key) => key + 1);
       }
       setParticipantLimit(existingEvent.participantLimit);
       setVisibility(existingEvent.visibility);
@@ -151,6 +160,57 @@ export function CreateEventScreen() {
       setSelectedSportId(route.params.prefillSport);
     }
   }, [existingEvent, route.params?.prefillSport]);
+
+  // Geocode the typed meeting point so the map actually jumps to it, without
+  // re-searching on every keystroke or re-centering while the pin is dragged.
+  useEffect(() => {
+    if (skipNextGeocodeRef.current) {
+      skipNextGeocodeRef.current = false;
+      return;
+    }
+
+    const query = meetingPoint.trim();
+
+    if (query.length < 3) {
+      setGeocodeStatus('idle');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      setGeocodeStatus('searching');
+
+      geocodeAddress(query, controller.signal)
+        .then((result) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          if (result) {
+            const found = { latitude: result.latitude, longitude: result.longitude };
+            setCoords(found);
+            setMapCenter(found);
+            setMapKey((key) => key + 1);
+            setGeocodeStatus('idle');
+          } else {
+            setGeocodeStatus('notFound');
+          }
+        })
+        .catch((geocodeError) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          console.warn('Hive geocode lookup failed.', geocodeError);
+          setGeocodeStatus('notFound');
+        });
+    }, 800);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [meetingPoint]);
 
   const selectedSport =
     copy.home.sportOptions.find((sport) => sport.id === selectedSportId) ??
@@ -458,12 +518,22 @@ export function CreateEventScreen() {
                   value={meetingPoint}
                 />
               </View>
+              {geocodeStatus === 'searching' ? (
+                <Text style={[styles.geocodeStatusText, { color: theme.colors.textMuted }]}>
+                  {copy.createEvent.geocodeSearching}
+                </Text>
+              ) : geocodeStatus === 'notFound' ? (
+                <Text style={[styles.geocodeStatusText, { color: theme.colors.danger }]}>
+                  {copy.createEvent.geocodeNotFound}
+                </Text>
+              ) : null}
             </View>
 
             <View style={styles.mapCard}>
               <LocationPicker
-                initialLatitude={initialCenter.latitude}
-                initialLongitude={initialCenter.longitude}
+                key={mapKey}
+                initialLatitude={mapCenter.latitude}
+                initialLongitude={mapCenter.longitude}
                 onChange={setCoords}
                 height={200}
                 borderRadius={28}
@@ -861,6 +931,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   mapHint: {
+    marginTop: spacing.xs,
+    marginLeft: spacing.xs,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  geocodeStatusText: {
     marginTop: spacing.xs,
     marginLeft: spacing.xs,
     fontFamily: 'PlusJakartaSans_500Medium',

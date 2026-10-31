@@ -275,6 +275,19 @@ export function mapNotificationRow(row: SupabaseNotificationRow): NotificationDi
     };
   }
 
+  if (row.type === 'sos') {
+    return {
+      id: row.id,
+      action: row.type,
+      eventId: typeof row.metadata?.event_id === 'string' ? row.metadata.event_id : '',
+      eventTitle: row.body,
+      audienceCount: 0,
+      createdAt: row.created_at,
+      read: Boolean(row.read_at),
+      perspective: 'organizer',
+    };
+  }
+
   const action = (() => {
     if (typeof row.metadata?.action === 'string') {
       return row.metadata.action;

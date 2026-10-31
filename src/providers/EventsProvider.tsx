@@ -18,6 +18,7 @@ import {
 } from '../lib/supabaseEvents';
 import { useSession } from './SessionProvider';
 import type {
+  EmergencyContact,
   EventAttendancePass,
   EventDraftPayload,
   EventRecord,
@@ -25,6 +26,7 @@ import type {
   HiveMember,
   NotificationDigest,
   RatingStats,
+  SosAlertResult,
   UserProfile,
 } from '../types/domain';
 import {
@@ -35,7 +37,13 @@ import { buildRatingStats } from '../utils/events';
 
 const STORAGE_PREFIX = '@hive/events';
 const NOTIFICATIONS_PREFIX = '@hive/event-notifications';
+const EMERGENCY_CONTACTS_PREFIX = '@hive/emergency-contacts';
 type BackendMode = 'local' | 'remote';
+
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
 
 interface EventMutationResult {
   attendeeCount: number;
@@ -87,11 +95,13 @@ interface ScanAttendanceResult {
 
 interface EventsContextValue {
   events: EventRecord[];
+  emergencyContacts: EmergencyContact[];
   hiveMembers: HiveMember[];
   joinedEvents: EventRecord[];
   myEvents: EventRecord[];
   notifications: NotificationDigest[];
   unreadNotifications: number;
+  addEmergencyContact: (fullName: string, phoneNumber: string) => Promise<EmergencyContact>;
   buildShareLink: (event: EventRecord) => string;
   cancelEvent: (eventId: string) => Promise<EventMutationResult>;
   completeEvent: (eventId: string) => Promise<EventMutationResult>;
@@ -106,11 +116,13 @@ interface EventsContextValue {
   joinEvent: (eventId: string) => Promise<JoinEventResult>;
   leaveEvent: (eventId: string) => Promise<LeaveEventResult>;
   markAllNotificationsRead: () => void;
+  removeEmergencyContact: (contactId: string) => Promise<void>;
   scanAttendanceCode: (eventId: string, rawCode: string) => Promise<ScanAttendanceResult>;
   submitEventReview: (
     eventId: string,
     payload: SubmitEventReviewPayload,
   ) => Promise<SubmitEventReviewResult>;
+  triggerSosAlert: (eventId: string, coords: Coordinates | null) => Promise<SosAlertResult>;
   visibleEvents: EventRecord[];
   updateEvent: (
     eventId: string,
@@ -455,6 +467,10 @@ function getNotificationsKey(userId: string) {
   return `${NOTIFICATIONS_PREFIX}:${userId}`;
 }
 
+function getEmergencyContactsKey(userId: string) {
+  return `${EMERGENCY_CONTACTS_PREFIX}:${userId}`;
+}
+
 function deriveDisplayName(email: string) {
   const base = email.split('@')[0]?.replace(/[._-]+/g, ' ').trim() || 'Hive';
   return base.replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -501,6 +517,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [notifications, setNotifications] = useState<NotificationDigest[]>([]);
   const [memberDirectory, setMemberDirectory] = useState<HiveMember[]>(seedMembers);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
   const [backendMode, setBackendMode] = useState<BackendMode>(
     hasSupabaseConfig && supabase ? 'remote' : 'local',
   );
@@ -766,6 +783,60 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
     void AsyncStorage.setItem(getNotificationsKey(user.id), JSON.stringify(notifications));
   }, [backendMode, notifications, user?.id]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadEmergencyContacts() {
+      if (!user) {
+        if (active) {
+          setEmergencyContacts([]);
+        }
+        return;
+      }
+
+      if (backendMode === 'remote' && supabase) {
+        const { data, error } = await supabase
+          .from('emergency_contacts')
+          .select('id, full_name, phone_number, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
+
+        if (!active) {
+          return;
+        }
+
+        if (error) {
+          console.warn('Hive emergency contacts load failed.', error);
+          return;
+        }
+
+        setEmergencyContacts(
+          (data ?? []).map((row) => ({
+            id: row.id,
+            fullName: row.full_name,
+            phoneNumber: row.phone_number,
+            createdAt: row.created_at,
+          })),
+        );
+        return;
+      }
+
+      const stored = await AsyncStorage.getItem(getEmergencyContactsKey(user.id));
+
+      if (!active) {
+        return;
+      }
+
+      setEmergencyContacts(stored ? (JSON.parse(stored) as EmergencyContact[]) : []);
+    }
+
+    void loadEmergencyContacts();
+
+    return () => {
+      active = false;
+    };
+  }, [backendMode, user]);
 
   const pushNotification = (action: NotificationDigest['action'], event: EventRecord, audienceCount: number) => {
     if (audienceCount <= 0) {
@@ -1795,6 +1866,106 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
   };
 
+  const addEmergencyContact = async (fullName: string, phoneNumber: string) => {
+    if (!user) {
+      throw new Error('No hay una sesión activa.');
+    }
+
+    const trimmedName = fullName.trim();
+    const trimmedPhone = phoneNumber.trim();
+
+    if (!trimmedName || !trimmedPhone) {
+      throw new Error('Nombre y teléfono son obligatorios.');
+    }
+
+    if (backendMode === 'remote' && supabase) {
+      const { data, error } = await supabase
+        .from('emergency_contacts')
+        .insert({ user_id: user.id, full_name: trimmedName, phone_number: trimmedPhone })
+        .select('id, full_name, phone_number, created_at')
+        .single();
+
+      if (error || !data) {
+        throw error ?? new Error('No pudimos guardar el contacto.');
+      }
+
+      const nextContact: EmergencyContact = {
+        id: data.id,
+        fullName: data.full_name,
+        phoneNumber: data.phone_number,
+        createdAt: data.created_at,
+      };
+
+      setEmergencyContacts((current) => [...current, nextContact]);
+      return nextContact;
+    }
+
+    const nextContact: EmergencyContact = {
+      id: createLocalId('contact'),
+      fullName: trimmedName,
+      phoneNumber: trimmedPhone,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextContacts = [...emergencyContacts, nextContact];
+    setEmergencyContacts(nextContacts);
+    await AsyncStorage.setItem(getEmergencyContactsKey(user.id), JSON.stringify(nextContacts));
+    return nextContact;
+  };
+
+  const removeEmergencyContact = async (contactId: string) => {
+    if (!user) {
+      throw new Error('No hay una sesión activa.');
+    }
+
+    if (backendMode === 'remote' && supabase) {
+      const { error } = await supabase.from('emergency_contacts').delete().eq('id', contactId);
+
+      if (error) {
+        throw error;
+      }
+
+      setEmergencyContacts((current) => current.filter((contact) => contact.id !== contactId));
+      return;
+    }
+
+    const nextContacts = emergencyContacts.filter((contact) => contact.id !== contactId);
+    setEmergencyContacts(nextContacts);
+    await AsyncStorage.setItem(getEmergencyContactsKey(user.id), JSON.stringify(nextContacts));
+  };
+
+  const triggerSosAlert = async (
+    eventId: string,
+    coords: Coordinates | null,
+  ): Promise<SosAlertResult> => {
+    if (!user) {
+      throw new Error('No hay una sesión activa.');
+    }
+
+    if (backendMode === 'remote' && supabase) {
+      const { data, error } = await supabase.rpc('trigger_sos_alert', {
+        p_event_id: eventId,
+        p_lat: coords?.latitude ?? null,
+        p_lng: coords?.longitude ?? null,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const payload = (data ?? {}) as { status?: SosAlertResult['status']; alertId?: string };
+
+      return {
+        status: payload.status ?? 'not_found',
+        alertId: payload.alertId,
+      };
+    }
+
+    // Mock mode has nobody else to notify; the SMS to her own trusted
+    // contacts is still the real signal, so just confirm the trigger locally.
+    return { status: 'sent', alertId: createLocalId('sos') };
+  };
+
   const myEvents = useMemo(() => {
     if (!user) {
       return [];
@@ -1843,11 +2014,13 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     events,
+    emergencyContacts,
     hiveMembers,
     joinedEvents,
     myEvents,
     notifications,
     unreadNotifications,
+    addEmergencyContact,
     buildShareLink,
     cancelEvent,
     completeEvent,
@@ -1862,8 +2035,10 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     joinEvent,
     leaveEvent,
     markAllNotificationsRead,
+    removeEmergencyContact,
     scanAttendanceCode,
     submitEventReview,
+    triggerSosAlert,
     visibleEvents,
     updateEvent,
   };

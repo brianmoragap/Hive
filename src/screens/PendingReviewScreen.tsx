@@ -2,27 +2,42 @@ import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   AppState,
+  Image,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { GlassPanel } from '../components/GlassPanel';
-import { PrimaryButton } from '../components/PrimaryButton';
-import { ScreenFrame } from '../components/ScreenFrame';
 import { useLocale } from '../providers/LocaleProvider';
 import { useSession } from '../providers/SessionProvider';
-import { colors, spacing } from '../theme/tokens';
+import { hiveColors, hiveFonts } from '../theme/hiveBrand';
+import { radii, spacing } from '../theme/tokens';
 
 const POLL_INTERVAL_MS = 20000;
 
+const logoImage = require('../../assets/images/hive-logo-black.png');
+const logoAspectRatio = 880 / 268;
+const logoWidth = 104;
+const logoHeight = Math.round(logoWidth / logoAspectRatio);
+
 export function PendingReviewScreen() {
   const { copy } = useLocale();
-  const { debugApproveProfile, isMockMode, profile, refreshProfile, signOut } = useSession();
+  const {
+    debugApproveProfile,
+    isMockMode,
+    profile,
+    refreshProfile,
+    returnToVerificationEdit,
+    signOut,
+  } = useSession();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [editing, setEditing] = useState(false);
   const refreshProfileRef = useRef(refreshProfile);
   refreshProfileRef.current = refreshProfile;
 
@@ -71,130 +86,179 @@ export function PendingReviewScreen() {
     }
   };
 
+  const handleEditPress = () => {
+    Alert.alert(copy.pending.editConfirmTitle, copy.pending.editConfirmBody, [
+      { style: 'cancel', text: copy.common.cancel },
+      {
+        onPress: () => {
+          void (async () => {
+            try {
+              setEditing(true);
+              await returnToVerificationEdit();
+            } catch (error) {
+              console.warn('Hive return to verification edit failed.', error);
+            } finally {
+              setEditing(false);
+            }
+          })();
+        },
+        text: copy.pending.editCta,
+      },
+    ]);
+  };
+
   return (
-    <ScreenFrame>
+    <View style={styles.screen}>
       <StatusBar style="dark" />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            colors={[colors.primaryDeep]}
-            onRefresh={() => void handleManualRefresh()}
-            refreshing={isRefreshing}
-            tintColor={colors.primaryDeep}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.hero}>
-          <View style={styles.heroTopRow}>
-            <View style={styles.heroCopyBlock}>
-              <Text style={styles.kicker}>{copy.pending.kicker}</Text>
-              <Text style={styles.title}>{copy.pending.title}</Text>
-            </View>
-          </View>
-          <Text style={styles.copy}>{copy.pending.copy}</Text>
-        </View>
-
-        <GlassPanel>
-          <View style={styles.statusBadge}>
-            <View style={styles.statusIcon}>
-              <Feather color={colors.primaryDeep} name="shield" size={22} />
-            </View>
-            <View style={styles.statusCopy}>
-              <Text style={styles.statusTitle}>{copy.pending.status}</Text>
-              <Text style={styles.statusText}>{copy.pending.reviewOnly}</Text>
-            </View>
-          </View>
-
-          <View style={styles.identityCard}>
-            <Text style={styles.identityLabel}>{copy.pending.identityTitle}</Text>
-            <Text style={styles.identityValue}>{profile?.fullName || copy.common.pending}</Text>
-            <Text style={styles.identityLabel}>RUT</Text>
-            <Text style={styles.identityValue}>{profile?.rut || copy.common.pending}</Text>
-          </View>
-
-          <View style={styles.timeline}>
-            <Text style={styles.timelineTitle}>{copy.pending.timelineTitle}</Text>
-            {copy.pending.timeline.map((step) => (
-              <Text key={step} style={styles.timelineText}>
-                {step}
-              </Text>
-            ))}
-          </View>
-
-          <PrimaryButton
-            label={copy.common.closeSession}
-            onPress={() => void signOut()}
-            variant="secondary"
-          />
-
-          {isMockMode ? (
-            <PrimaryButton
-              label={copy.pending.demoApprove}
-              onPress={() => void debugApproveProfile()}
-              style={styles.demoButton}
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              colors={[hiveColors.fucsia]}
+              onRefresh={() => void handleManualRefresh()}
+              refreshing={isRefreshing}
+              tintColor={hiveColors.fucsia}
             />
-          ) : null}
-        </GlassPanel>
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <Image resizeMode="contain" source={logoImage} style={styles.logo} />
 
-        <GlassPanel>
-          <Text style={styles.tipTitle}>{copy.pending.safetyTipsTitle}</Text>
-          <View style={styles.tipList}>
-            {copy.pending.safetyTips.map((tip) => (
-              <View key={tip} style={styles.tipRow}>
-                <View style={styles.tipDot} />
-                <Text style={styles.tipText}>{tip}</Text>
-              </View>
-            ))}
+          <View style={styles.hero}>
+            <Text style={styles.kicker}>{copy.pending.kicker}</Text>
+            <Text style={styles.title}>{copy.pending.title}</Text>
+            <Text style={styles.copy}>{copy.pending.copy}</Text>
           </View>
-        </GlassPanel>
-      </ScrollView>
-    </ScreenFrame>
+
+          <View style={styles.panel}>
+            <View style={styles.statusBadge}>
+              <View style={styles.statusIcon}>
+                <Feather color={hiveColors.textLimaDark} name="shield" size={22} />
+              </View>
+              <View style={styles.statusCopy}>
+                <Text style={styles.statusTitle}>{copy.pending.status}</Text>
+                <Text style={styles.statusText}>{copy.pending.reviewOnly}</Text>
+              </View>
+            </View>
+
+            <View style={styles.identityCard}>
+              <Text style={styles.identityLabel}>{copy.pending.identityTitle}</Text>
+              <Text style={styles.identityValue}>{profile?.fullName || copy.common.pending}</Text>
+              <Text style={styles.identityLabel}>RUT</Text>
+              <Text style={styles.identityValue}>{profile?.rut || copy.common.pending}</Text>
+            </View>
+
+            <View style={styles.timeline}>
+              <Text style={styles.timelineTitle}>{copy.pending.timelineTitle}</Text>
+              {copy.pending.timeline.map((step) => (
+                <Text key={step} style={styles.timelineText}>
+                  {step}
+                </Text>
+              ))}
+            </View>
+
+            <Pressable
+              disabled={editing}
+              onPress={handleEditPress}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && !editing ? styles.secondaryButtonPressed : undefined,
+                editing ? styles.buttonDisabled : undefined,
+              ]}
+            >
+              <Feather color={hiveColors.negro} name="arrow-left" size={15} />
+              <Text style={styles.secondaryButtonLabel}>{copy.pending.editCta}</Text>
+            </Pressable>
+
+            <Pressable onPress={() => void signOut()} style={styles.ghostButton}>
+              <Text style={styles.ghostButtonLabel}>{copy.common.closeSession}</Text>
+            </Pressable>
+
+            {isMockMode ? (
+              <Pressable
+                onPress={() => void debugApproveProfile()}
+                style={({ pressed }) => [
+                  styles.demoButton,
+                  pressed ? styles.demoButtonPressed : undefined,
+                ]}
+              >
+                <Text style={styles.demoButtonLabel}>{copy.pending.demoApprove}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+
+          <View style={styles.panel}>
+            <Text style={styles.tipTitle}>{copy.pending.safetyTipsTitle}</Text>
+            <View style={styles.tipList}>
+              {copy.pending.safetyTips.map((tip) => (
+                <View key={tip} style={styles.tipRow}>
+                  <View style={styles.tipDot} />
+                  <Text style={styles.tipText}>{tip}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: hiveColors.offwhite,
+  },
+  safeArea: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxxl,
     paddingTop: spacing.lg,
     gap: spacing.xl,
   },
+  logo: {
+    width: logoWidth,
+    height: logoHeight,
+  },
   hero: {
     gap: spacing.sm,
   },
-  heroTopRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  heroCopyBlock: {
-    flex: 1,
-    gap: spacing.sm,
-  },
   kicker: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: hiveFonts.demiBold,
     fontSize: 11,
-    letterSpacing: 2.2,
+    letterSpacing: 2,
     textTransform: 'uppercase',
-    color: colors.primaryDeep,
+    color: hiveColors.fucsia,
   },
   title: {
     maxWidth: 320,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 30,
-    lineHeight: 36,
-    color: colors.text,
+    fontFamily: hiveFonts.heavy,
+    fontSize: 28,
+    lineHeight: 33,
+    letterSpacing: -0.5,
+    color: hiveColors.negro,
   },
   copy: {
     maxWidth: 320,
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: hiveFonts.normal,
     fontSize: 15,
     lineHeight: 23,
-    color: colors.textMuted,
+    color: hiveColors.grisMedio,
+  },
+  panel: {
+    borderRadius: 32,
+    backgroundColor: hiveColors.blanco,
+    padding: spacing.xl,
+    gap: spacing.lg,
+    shadowColor: hiveColors.negro,
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 4,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -204,71 +268,115 @@ const styles = StyleSheet.create({
   statusIcon: {
     width: 54,
     height: 54,
-    borderRadius: 999,
+    borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: hiveColors.limaTints[100],
   },
   statusCopy: {
     flex: 1,
     gap: spacing.xxs,
   },
   statusTitle: {
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 22,
-    color: colors.text,
+    fontFamily: hiveFonts.heavy,
+    fontSize: 20,
+    color: hiveColors.negro,
   },
   statusText: {
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: hiveFonts.normal,
     fontSize: 14,
     lineHeight: 21,
-    color: colors.textMuted,
+    color: hiveColors.grisMedio,
   },
   identityCard: {
     gap: spacing.xs,
-    marginTop: spacing.xl,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.64)',
+    borderRadius: 24,
+    backgroundColor: hiveColors.offwhite,
     padding: spacing.lg,
   },
   identityLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: hiveFonts.demiBold,
     fontSize: 10,
     letterSpacing: 1.6,
     textTransform: 'uppercase',
-    color: colors.textSoft,
+    color: hiveColors.grisMedio,
   },
   identityValue: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: hiveFonts.bold,
     fontSize: 16,
-    color: colors.text,
+    color: hiveColors.negro,
   },
   timeline: {
     gap: spacing.xs,
-    marginVertical: spacing.xl,
   },
   timelineTitle: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: hiveFonts.bold,
     fontSize: 15,
-    color: colors.text,
+    color: hiveColors.negro,
   },
   timelineText: {
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: hiveFonts.normal,
     fontSize: 14,
     lineHeight: 22,
-    color: colors.textMuted,
+    color: hiveColors.grisMedio,
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    minHeight: 54,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: hiveColors.blanco,
+    borderWidth: 1.5,
+    borderColor: hiveColors.negro,
+  },
+  secondaryButtonPressed: {
+    opacity: 0.9,
+  },
+  secondaryButtonLabel: {
+    fontFamily: hiveFonts.bold,
+    fontSize: 14,
+    color: hiveColors.negro,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  ghostButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ghostButtonLabel: {
+    fontFamily: hiveFonts.demiBold,
+    fontSize: 13,
+    color: hiveColors.fucsia,
   },
   demoButton: {
-    marginTop: spacing.sm,
+    minHeight: 54,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: hiveColors.fucsia,
+    marginTop: spacing.xs,
+  },
+  demoButtonPressed: {
+    opacity: 0.92,
+  },
+  demoButtonLabel: {
+    fontFamily: hiveFonts.bold,
+    fontSize: 14,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+    color: hiveColors.blanco,
   },
   tipTitle: {
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 22,
-    color: colors.text,
+    fontFamily: hiveFonts.heavy,
+    fontSize: 20,
+    color: hiveColors.negro,
   },
   tipList: {
     gap: spacing.md,
-    marginTop: spacing.lg,
   },
   tipRow: {
     flexDirection: 'row',
@@ -276,17 +384,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   tipDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    marginTop: 6,
-    backgroundColor: colors.mint,
+    width: 8,
+    height: 8,
+    borderRadius: radii.pill,
+    marginTop: 7,
+    backgroundColor: hiveColors.lima,
   },
   tipText: {
     flex: 1,
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: hiveFonts.normal,
     fontSize: 14,
     lineHeight: 22,
-    color: colors.textMuted,
+    color: hiveColors.grisMedio,
   },
 });

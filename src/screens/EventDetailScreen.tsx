@@ -3,6 +3,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Location from 'expo-location';
+import * as SMS from 'expo-sms';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import QRCode from 'react-native-qrcode-svg';
@@ -75,6 +77,7 @@ export function EventDetailScreen() {
   const { copy } = useLocale();
   const {
     hiveMembers,
+    emergencyContacts,
     buildShareLink,
     completeEvent,
     getAttendancePass,
@@ -85,6 +88,7 @@ export function EventDetailScreen() {
     joinEvent,
     leaveEvent,
     submitEventReview,
+    triggerSosAlert,
   } = useEvents();
   const { user } = useSession();
   const navigation = useNavigation<RootNavigation>();
@@ -93,6 +97,7 @@ export function EventDetailScreen() {
   const event = getEventById(route.params.eventId);
   const [eventRating, setEventRating] = useState(0);
   const [organizerRating, setOrganizerRating] = useState(0);
+  const [sosSending, setSosSending] = useState(false);
 
   const members = useMemo(() => {
     if (!event) {
@@ -235,6 +240,87 @@ export function EventDetailScreen() {
     }
   };
 
+  const sendSos = async () => {
+    setSosSending(true);
+
+    // Best-effort: a denied/unavailable permission must never block the
+    // alert, it just goes out without coordinates.
+    let coords: { latitude: number; longitude: number } | null = null;
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+
+      if (permission.status === 'granted') {
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        coords = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      }
+    } catch (error) {
+      console.warn('Hive SOS location fetch failed.', error);
+    }
+
+    try {
+      const result = await triggerSosAlert(event.id, coords);
+
+      if (result.status !== 'sent') {
+        Alert.alert(copy.eventDetail.sosFailedTitle, copy.eventDetail.sosFailedBody);
+        return;
+      }
+
+      const message = coords
+        ? copy.eventDetail.sosSmsBody
+            .replace('{event}', event.title)
+            .replace('{link}', `https://maps.google.com/?q=${coords.latitude},${coords.longitude}`)
+        : copy.eventDetail.sosSmsBodyNoLocation.replace('{event}', event.title);
+
+      Alert.alert(copy.eventDetail.sosSentTitle, copy.eventDetail.sosSentBody, [
+        {
+          onPress: () => {
+            void SMS.isAvailableAsync().then((available) => {
+              if (!available) {
+                Alert.alert(event.title, message);
+                return;
+              }
+
+              void SMS.sendSMSAsync(
+                emergencyContacts.map((contact) => contact.phoneNumber),
+                message,
+              );
+            });
+          },
+        },
+      ]);
+    } catch (error) {
+      console.warn('Hive SOS trigger failed.', error);
+      Alert.alert(copy.eventDetail.sosFailedTitle, copy.eventDetail.sosFailedBody);
+    } finally {
+      setSosSending(false);
+    }
+  };
+
+  const handleSos = () => {
+    if (emergencyContacts.length === 0) {
+      Alert.alert(copy.eventDetail.sosNoContactsTitle, copy.eventDetail.sosNoContactsBody, [
+        { style: 'cancel', text: copy.common.cancel },
+        {
+          onPress: () => navigation.navigate('EmergencyContacts'),
+          text: copy.eventDetail.sosNoContactsAction,
+        },
+      ]);
+      return;
+    }
+
+    Alert.alert(copy.eventDetail.sosConfirmTitle, copy.eventDetail.sosConfirmBody, [
+      { style: 'cancel', text: copy.common.cancel },
+      {
+        onPress: () => void sendSos(),
+        style: 'destructive',
+        text: copy.eventDetail.sosConfirmAction,
+      },
+    ]);
+  };
+
   const handleCompleteEvent = () => {
     Alert.alert(copy.myEvents.completeConfirmTitle, copy.myEvents.completeConfirmBody, [
       {
@@ -275,7 +361,7 @@ export function EventDetailScreen() {
               style={StyleSheet.absoluteFill}
             />
 
-            <View style={[styles.topControls, { paddingTop: spacing.md + insets.top }]}>
+            <View style={[styles.topControls, { paddingTop: spacing.xs + 5 }]}>
               <TopControlButton iconName="arrow-left" onPress={() => navigation.goBack()} />
               <Text style={styles.wordmark}>HIVE</Text>
               <View style={styles.topRightActions}>
@@ -388,6 +474,30 @@ export function EventDetailScreen() {
               <Text style={styles.routeCtaLabel}>{copy.eventDetail.mapAction}</Text>
             </Pressable>
           </View>
+
+          {isJoined && !isHost && !isCompleted && event.status !== 'cancelled' ? (
+            <View style={styles.sosCard}>
+              <View style={styles.sosHeaderRow}>
+                <View style={styles.sosIconWrap}>
+                  <Feather color={colors.danger} name="alert-triangle" size={18} />
+                </View>
+                <Text style={styles.sosTitle}>{copy.eventDetail.sosAction}</Text>
+              </View>
+              <Text style={styles.sosBody}>{copy.eventDetail.sosConfirmBody}</Text>
+              <Pressable
+                disabled={sosSending}
+                onPress={handleSos}
+                style={({ pressed }) => [
+                  styles.sosButton,
+                  pressed && !sosSending ? styles.pressed : undefined,
+                  sosSending ? styles.sosButtonDisabled : undefined,
+                ]}
+              >
+                <Feather color={colors.white} name="alert-octagon" size={18} />
+                <Text style={styles.sosButtonLabel}>{copy.eventDetail.sosAction}</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
           {isHost && !isCompleted ? (
             <View style={styles.checkInCard}>
@@ -956,6 +1066,59 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_700Bold',
     fontSize: 13,
     color: colors.text,
+  },
+  sosCard: {
+    marginHorizontal: spacing.lg,
+    borderRadius: 28,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    backgroundColor: 'rgba(255, 238, 238, 0.96)',
+    borderWidth: 1,
+    borderColor: 'rgba(192, 57, 90, 0.22)',
+    ...shadows.card,
+  },
+  sosHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  sosIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(192, 57, 90, 0.14)',
+  },
+  sosTitle: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 17,
+    color: colors.danger,
+  },
+  sosBody: {
+    fontFamily: 'PlusJakartaSans_500Medium',
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textMuted,
+  },
+  sosButton: {
+    minHeight: 52,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    backgroundColor: colors.danger,
+    ...shadows.button,
+  },
+  sosButtonDisabled: {
+    opacity: 0.6,
+  },
+  sosButtonLabel: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 14,
+    letterSpacing: 1,
+    color: colors.white,
   },
   checkInCard: {
     marginHorizontal: spacing.lg,

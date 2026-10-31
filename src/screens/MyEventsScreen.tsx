@@ -246,6 +246,22 @@ export function MyEventsScreen() {
             <Text style={[styles.heroCopy, { color: theme.colors.textMuted }]}>{copy.myEvents.copy}</Text>
           </Animated.View>
 
+          <Animated.View style={getEntranceStyle(1, 20)}>
+            <Pressable
+              onPress={() => navigation.navigate('CreateEvent')}
+              style={({ pressed }) => [
+                styles.createCta,
+                { backgroundColor: theme.colors.primary },
+                pressed ? styles.cardPressed : undefined,
+              ]}
+            >
+              <Feather color={theme.colors.white} name="plus-circle" size={18} />
+              <Text style={[styles.createCtaLabel, { color: theme.colors.white }]}>
+                {copy.home.createEvent}
+              </Text>
+            </Pressable>
+          </Animated.View>
+
           {freshMessage ? (
             <Animated.View
               style={[
@@ -766,6 +782,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: colors.textMuted,
+  },
+  createCta: {
+    minHeight: 56,
+    borderRadius: radii.pill,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    ...shadows.button,
+  },
+  createCtaLabel: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 15,
+    letterSpacing: 0.4,
   },
   freshBanner: {
     flexDirection: 'row',

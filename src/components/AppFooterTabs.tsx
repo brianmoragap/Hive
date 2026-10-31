@@ -4,10 +4,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useLocale } from '../providers/LocaleProvider';
 import { useAppTheme } from '../providers/ThemeProvider';
+import { hiveFonts } from '../theme/hiveBrand';
 import { radii, spacing } from '../theme/tokens';
 import type { AppTab } from '../types/domain';
 
-const FOOTER_HEIGHT = 88;
+const FOOTER_HEIGHT = 76;
 
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 
@@ -35,7 +36,7 @@ export function AppFooterTabs({
   return (
     <View style={[styles.footerShell, { paddingBottom: Math.max(bottomInset, spacing.sm) }]}>
       <BlurView
-        intensity={26}
+        intensity={40}
         style={[
           styles.footerBlur,
           {
@@ -84,11 +85,11 @@ function FooterTab({
       <View
         style={[
           styles.footerIconChip,
-          active ? [styles.footerIconChipActive, { backgroundColor: theme.colors.primaryDeep }] : undefined,
+          active ? [styles.footerIconChipActive, { backgroundColor: theme.colors.navActive }] : undefined,
         ]}
       >
         <Feather
-          color={active ? theme.colors.white : theme.colors.textMuted}
+          color={active ? theme.colors.navActiveIcon : theme.colors.textMuted}
           name={iconName}
           size={18}
         />
@@ -97,7 +98,7 @@ function FooterTab({
         style={[
           styles.footerLabel,
           { color: theme.colors.textSoft },
-          active ? [styles.footerLabelActive, { color: theme.colors.primaryDeep }] : undefined,
+          active ? [styles.footerLabelActive, { color: theme.colors.navActiveText }] : undefined,
         ]}
       >
         {label}
@@ -121,19 +122,20 @@ const styles = StyleSheet.create({
   footerBar: {
     minHeight: FOOTER_HEIGHT,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: spacing.xs,
-    paddingTop: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   footerTab: {
     alignItems: 'center',
-    gap: spacing.xs,
+    justifyContent: 'center',
+    gap: 4,
     minWidth: 64,
   },
   footerIconChip: {
-    width: 44,
-    height: 44,
+    width: 38,
+    height: 38,
     borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
@@ -141,9 +143,9 @@ const styles = StyleSheet.create({
   footerIconChipActive: {
   },
   footerLabel: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: hiveFonts.demiBold,
     fontSize: 10,
-    letterSpacing: 1.3,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
   footerLabelActive: {

@@ -45,32 +45,22 @@ import { eventMatchesSearch, formatNotificationLine } from '../utils/events';
 type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
 const FOOTER_HEIGHT = 88;
 
-function getHeroGradient(
-  selectedSportId: SportOption['id'],
-  theme: ReturnType<typeof useAppTheme>['theme'],
-): [string, string, string] {
-  if (selectedSportId === 'mtb') {
-    return [withAlpha(theme.colors.peach, 'F0'), withAlpha(theme.colors.primary, 'D4'), withAlpha(theme.colors.primaryDeep, '94')];
+const homeHeroImage = require('../../assets/images/home-hero.jpg');
+const runningFeatureImage = require('../../assets/images/sport-running.jpg');
+
+function getFeatureImageSource(sportId: SportOption['id']) {
+  if (sportId === 'running') {
+    return runningFeatureImage;
   }
 
-  if (selectedSportId === 'trekking') {
-    return [withAlpha(theme.colors.mint, 'EE'), withAlpha(theme.colors.primary, 'CF'), withAlpha(theme.colors.primaryDeep, '90')];
-  }
-
-  if (selectedSportId === 'trail_running') {
-    return [withAlpha(theme.colors.lilac, 'EB'), withAlpha(theme.colors.primary, 'CC'), withAlpha(theme.colors.primaryDeep, '8A')];
-  }
-
-  if (selectedSportId === 'gym') {
-    return [withAlpha(theme.colors.lilac, 'E6'), withAlpha(theme.colors.primary, 'C8'), withAlpha(theme.colors.primaryDeep, '8E')];
-  }
-
-  if (selectedSportId === 'road_cycling') {
-    return [withAlpha(theme.colors.peach, 'EE'), withAlpha(theme.colors.primary, 'D8'), withAlpha(theme.colors.primaryDeep, '96')];
-  }
-
-  return [withAlpha(theme.colors.primary, 'DE'), withAlpha(theme.colors.primaryDeep, 'CC'), withAlpha(theme.colors.primaryDeep, '82')];
+  return { uri: sportHeroImages[sportId] ?? homeSpotlightImage };
 }
+
+const FEATURE_CARD_OVERLAY: [string, string, string] = [
+  'rgba(13,13,13,0.12)',
+  'rgba(13,13,13,0.38)',
+  'rgba(13,13,13,0.88)',
+];
 
 export function HomeScreen() {
   const { copy } = useLocale();
@@ -111,11 +101,6 @@ export function HomeScreen() {
       ),
     [searchQuery, selectedSport.id, visibleEvents],
   );
-  const featureGradient = useMemo(
-    () => getHeroGradient(selectedSport.id, theme),
-    [selectedSport.id, theme],
-  );
-
   useEffect(() => {
     Animated.stagger(
       85,
@@ -222,8 +207,21 @@ export function HomeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View style={[styles.heroSection, getEntranceStyle(1, 16)]}>
-            <Text style={[styles.heroTitle, { color: theme.colors.text }]}>{copy.home.heroTitle}</Text>
-            <Text style={[styles.heroCopy, { color: theme.colors.textMuted }]}>{copy.home.heroCopy}</Text>
+            <ImageBackground
+              imageStyle={styles.heroImage}
+              source={homeHeroImage}
+              style={styles.heroBanner}
+            >
+              <LinearGradient
+                colors={['rgba(13,13,13,0.1)', 'rgba(13,13,13,0.3)', 'rgba(13,13,13,0.78)']}
+                locations={[0, 0.5, 1]}
+                style={styles.heroGradient}
+              />
+              <View style={styles.heroBannerContent}>
+                <Text style={styles.heroTitle}>{copy.home.heroTitle}</Text>
+                <Text style={styles.heroCopy}>{copy.home.heroCopy}</Text>
+              </View>
+            </ImageBackground>
           </Animated.View>
 
           <Animated.View style={[styles.createCtaSection, getEntranceStyle(2, 22)]}>
@@ -231,17 +229,12 @@ export function HomeScreen() {
               onPress={openCreateEvent}
               style={({ pressed }) => [styles.createCtaShell, pressed ? styles.cardPressed : undefined]}
             >
-              <LinearGradient
-                colors={theme.primaryGradient}
-                end={{ x: 1, y: 0.2 }}
-                start={{ x: 0, y: 1 }}
-                style={styles.createCtaGradient}
-              >
+              <View style={[styles.createCtaGradient, { backgroundColor: theme.colors.primary }]}>
                 <Feather color={theme.colors.white} name="plus-circle" size={18} />
                 <Text style={[styles.createCtaLabel, { color: theme.colors.white }]}>
                   {copy.home.createEvent}
                 </Text>
-              </LinearGradient>
+              </View>
             </Pressable>
           </Animated.View>
 
@@ -258,11 +251,11 @@ export function HomeScreen() {
               >
                 <ImageBackground
                   imageStyle={styles.featureImage}
-                  source={{ uri: sportHeroImages[selectedSportId] ?? homeSpotlightImage }}
+                  source={getFeatureImageSource(selectedSportId)}
                   style={[styles.featureCard, { backgroundColor: theme.colors.primaryDeep }]}
                 >
                   <LinearGradient
-                    colors={featureGradient}
+                    colors={FEATURE_CARD_OVERLAY}
                     locations={[0, 0.62, 1]}
                     style={StyleSheet.absoluteFill}
                   />
@@ -430,6 +423,23 @@ const styles = StyleSheet.create({
   heroSection: {
     gap: spacing.xs,
   },
+  heroBanner: {
+    minHeight: 168,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+    borderRadius: 32,
+  },
+  heroImage: {
+    borderRadius: 32,
+  },
+  heroGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 32,
+  },
+  heroBannerContent: {
+    gap: 4,
+    padding: spacing.lg,
+  },
   createCtaSection: {
     gap: spacing.md,
   },
@@ -454,16 +464,16 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontFamily: 'PlusJakartaSans_800ExtraBold',
-    fontSize: 24,
-    lineHeight: 28,
-    letterSpacing: -1.1,
-    color: colors.text,
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -1,
+    color: colors.white,
   },
   heroCopy: {
     fontFamily: 'PlusJakartaSans_500Medium',
-    fontSize: 14,
-    lineHeight: 21,
-    color: colors.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    color: 'rgba(255,255,255,0.88)',
   },
   featureShell: {
     gap: spacing.md,
@@ -534,7 +544,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(255, 214, 219, 0.52)',
+    backgroundColor: 'rgba(204, 255, 0, 0.16)',
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
