@@ -58,7 +58,11 @@ export default function App() {
 }
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['hive://'],
+  // The GitHub Pages prefix tells React Navigation's web history that the
+  // app is hosted under /Hive/, not at the domain root -- otherwise it
+  // rewrites the address bar to e.g. /Auth, and every relative asset URL
+  // loaded from that point on resolves one level too high and 404s.
+  prefixes: ['hive://', 'https://brianmoragap.github.io/Hive'],
   config: {
     screens: {
       JoinEvent: 'join/:token',
